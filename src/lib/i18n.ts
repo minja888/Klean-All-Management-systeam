@@ -236,6 +236,44 @@ export const dictionary = {
   // Receipt
   "receipt.title": { en: "Receipt", sw: "Risiti" },
   "receipt.thankYou": { en: "Thank you for your business!", sw: "Asante kwa biashara!" },
+
+  // Expenses
+  "expenses.title": { en: "Expenses", sw: "Matumizi" },
+  "expenses.new": { en: "New expense", sw: "Matumizi mapya" },
+  "expenses.category": { en: "Category", sw: "Aina" },
+  "expenses.amount": { en: "Amount", sw: "Kiasi" },
+  "expenses.description": { en: "Description", sw: "Maelezo" },
+  "expenses.date": { en: "Date", sw: "Tarehe" },
+
+  // Payroll
+  "payroll.title": { en: "Payroll", sw: "Mishahara" },
+  "payroll.employees": { en: "Employees", sw: "Wafanyakazi" },
+  "payroll.runs": { en: "Payroll runs", sw: "Mizunguko ya mishahara" },
+  "payroll.newRun": { en: "New run", sw: "Mzunguko mpya" },
+  "payroll.newEmployee": { en: "New employee", sw: "Mfanyakazi mpya" },
+  "payroll.year": { en: "Year", sw: "Mwaka" },
+  "payroll.month": { en: "Month", sw: "Mwezi" },
+  "payroll.period": { en: "Period", sw: "Kipindi" },
+  "payroll.status": { en: "Status", sw: "Hali" },
+  "payroll.totalNet": { en: "Total net", sw: "Jumla halisi" },
+  "payroll.employee": { en: "Employee", sw: "Mfanyakazi" },
+  "payroll.position": { en: "Position", sw: "Wadhifa" },
+  "payroll.baseSalary": { en: "Base salary", sw: "Mshahara wa msingi" },
+  "payroll.bonus": { en: "Bonus", sw: "Bonasi" },
+  "payroll.foodAllowance": { en: "Food", sw: "Chakula" },
+  "payroll.transportAllowance": { en: "Transport", sw: "Usafiri" },
+  "payroll.deductions": { en: "Deductions", sw: "Makato" },
+  "payroll.netPay": { en: "Net pay", sw: "Malipo halisi" },
+  "payroll.approve": { en: "Approve", sw: "Idhinisha" },
+  "payroll.pay": { en: "Mark paid", sw: "Weka kama imelipwa" },
+  "payroll.phone": { en: "Phone", sw: "Simu" },
+  "payroll.active": { en: "Active", sw: "Anatumika" },
+  "payroll.openRun": { en: "Open", sw: "Fungua" },
+
+  // Payroll status
+  "pstatus.DRAFT": { en: "Draft", sw: "Rasimu" },
+  "pstatus.APPROVED": { en: "Approved", sw: "Imeidhinishwa" },
+  "pstatus.PAID": { en: "Paid", sw: "Imelipwa" },
 } as const;
 
 export type TranslationKey = keyof typeof dictionary;

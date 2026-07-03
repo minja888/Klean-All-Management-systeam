@@ -35,8 +35,8 @@ const MAIN_NAV: NavItem[] = [
   { key: "nav.customers", href: "/customers", module: "sales_pos", ready: true },
   { key: "nav.pos", href: "/pos", module: "sales_pos", ready: true },
   { key: "nav.sales", href: "/sales", module: "sales_pos", ready: true },
-  { key: "nav.expenses", href: "/expenses", module: "expenses_payroll", ready: false },
-  { key: "nav.payroll", href: "/payroll", module: "expenses_payroll", ready: false },
+  { key: "nav.expenses", href: "/expenses", module: "expenses_payroll", ready: true },
+  { key: "nav.payroll", href: "/payroll", module: "expenses_payroll", ready: true },
   { key: "nav.accounting", href: "/accounting", module: "payments_accounting", ready: false },
   { key: "nav.reports", href: "/reports", module: "profit_dashboard", ready: false },
 ];

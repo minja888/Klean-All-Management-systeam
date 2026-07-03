@@ -1,0 +1,457 @@
+// ============================================================================
+// Klean All Factory ERP / POS  —  Prisma schema (source of truth)
+// ----------------------------------------------------------------------------
+// Conventions used across this schema:
+//   * Money  -> Decimal @db.Decimal(14, 2)   (TZS, stored precisely — never Float)
+//   * Quantities / conversion factors / stock -> Float  (metres, rolls, pieces…)
+//   * Every business table carries createdAt / updatedAt for auditing.
+//   * "Own-department" isolation is supported via optional departmentId columns.
+// Prisma 7 note: the runtime connection URL is read from env("DATABASE_URL");
+// the direct (non-pooled) URL is used for migrations.
+// ============================================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  ADMIN
+  MANAGER
+  ACCOUNTING
+  WORKER
+}
+
+enum MovementType {
+  IN // stock added (purchase received, production output)
+  OUT // stock removed (sale, consumption)
+  ADJUSTMENT // manual correction
+  WASTE // scrapped during production
+}
+
+enum OrderStatus {
+  DRAFT
+  ORDERED
+  RECEIVED
+  CANCELLED
+}
+
+enum PaymentDirection {
+  INCOMING // money received from a customer
+  OUTGOING // money paid to a supplier
+}
+
+enum BatchStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PayrollStatus {
+  DRAFT
+  APPROVED
+  PAID
+}
+
+// ---------------------------------------------------------------------------
+// Access / Org
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  name         String
+  role         Role        @default(WORKER)
+  isActive     Boolean     @default(true)
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([role])
+  @@index([departmentId])
+}
+
+model Department {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users             User[]
+  employees         Employee[]
+  expenses          Expense[]
+  materials         Material[]
+  productionBatches ProductionBatch[]
+}
+
+/// Key/value store for company-wide settings (companyName, currency, lowStockDefault, defaultLanguage…)
+model AppSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Denormalised user info so history survives user deletion.
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String // CREATE | UPDATE | DELETE
+  entity    String // e.g. "Material", "Sale"
+  entityId  String?
+  userId    String?
+  userName  String
+  userEmail String
+  before    Json?
+  after     Json?
+  createdAt DateTime @default(now())
+
+  @@index([entity])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Partners
+// ---------------------------------------------------------------------------
+
+model Supplier {
+  id             String          @id @default(cuid())
+  name           String
+  phone          String?
+  email          String?
+  address        String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  purchaseOrders PurchaseOrder[]
+  payments       Payment[]
+}
+
+model Customer {
+  id        String    @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  address   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  sales     Sale[]
+  payments  Payment[]
+}
+
+// ---------------------------------------------------------------------------
+// Materials / Stock
+// ---------------------------------------------------------------------------
+
+model MaterialCategory {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  materials Material[]
+}
+
+model Material {
+  id               String           @id @default(cuid())
+  name             String
+  categoryId       String
+  category         MaterialCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  purchaseUnit     String // unit bought in, e.g. "roll"
+  stockUnit        String // unit stored/used in, e.g. "metre"
+  conversionFactor Float            @default(1) // stockUnit per 1 purchaseUnit
+  reorderLevel     Float            @default(0) // low-stock threshold (in stockUnit)
+  costPrice        Decimal          @default(0) @db.Decimal(14, 2) // cost per stockUnit (TZS)
+  currentStock     Float            @default(0) // held in stockUnit
+  departmentId     String?
+  department       Department?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  stockMovements   StockMovement[]
+  purchaseItems    PurchaseItem[]
+  bomItems         BomItem[]
+  productionUsages ProductionUsage[]
+
+  @@index([categoryId])
+  @@index([departmentId])
+}
+
+model Product {
+  id                String            @id @default(cuid())
+  sku               String            @unique
+  name              String
+  unit              String            @default("piece")
+  sellingPrice      Decimal           @default(0) @db.Decimal(14, 2)
+  currentStock      Float             @default(0)
+  reorderLevel      Float             @default(0)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  bomItems          BomItem[]
+  productionBatches ProductionBatch[]
+  saleItems         SaleItem[]
+  stockMovements    StockMovement[]
+}
+
+/// Every stock change (material OR product) is recorded here for a full history.
+model StockMovement {
+  id         String       @id @default(cuid())
+  type       MovementType
+  quantity   Float // always positive; `type` gives the direction
+  materialId String?
+  material   Material?    @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  productId  String?
+  product    Product?     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  refType    String? // "PurchaseOrder" | "Sale" | "ProductionBatch" | "Adjustment"
+  refId      String?
+  note       String?
+  userId     String?
+  createdAt  DateTime     @default(now())
+
+  @@index([materialId])
+  @@index([productId])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Purchases
+// ---------------------------------------------------------------------------
+
+model PurchaseOrder {
+  id           String         @id @default(cuid())
+  orderNumber  String         @unique
+  supplierId   String
+  supplier     Supplier       @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  status       OrderStatus    @default(DRAFT)
+  orderDate    DateTime       @default(now())
+  receivedDate DateTime?
+  totalAmount  Decimal        @default(0) @db.Decimal(14, 2)
+  amountPaid   Decimal        @default(0) @db.Decimal(14, 2)
+  notes        String?
+  createdById  String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  items        PurchaseItem[]
+  payments     Payment[]
+
+  @@index([supplierId])
+  @@index([status])
+}
+
+model PurchaseItem {
+  id              String        @id @default(cuid())
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  materialId      String
+  material        Material      @relation(fields: [materialId], references: [id], onDelete: Restrict)
+  quantity        Float // in material.purchaseUnit
+  unitPrice       Decimal       @db.Decimal(14, 2) // per purchaseUnit
+  lineTotal       Decimal       @db.Decimal(14, 2)
+
+  @@index([purchaseOrderId])
+}
+
+// ---------------------------------------------------------------------------
+// Production & BOM
+// ---------------------------------------------------------------------------
+
+model BomItem {
+  id              String   @id @default(cuid())
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  materialId      String
+  material        Material @relation(fields: [materialId], references: [id], onDelete: Restrict)
+  quantityPerUnit Float // material stockUnit consumed per 1 product unit
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([productId, materialId])
+}
+
+model ProductionBatch {
+  id               String            @id @default(cuid())
+  batchNumber      String            @unique
+  productId        String
+  product          Product           @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantityPlanned  Float
+  quantityProduced Float             @default(0)
+  wasteQuantity    Float             @default(0)
+  status           BatchStatus       @default(PLANNED)
+  departmentId     String?
+  department       Department?       @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  startedAt        DateTime?
+  completedAt      DateTime?
+  notes            String?
+  createdById      String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  usages           ProductionUsage[]
+
+  @@index([productId])
+  @@index([departmentId])
+  @@index([status])
+}
+
+model ProductionUsage {
+  id                String          @id @default(cuid())
+  productionBatchId String
+  productionBatch   ProductionBatch @relation(fields: [productionBatchId], references: [id], onDelete: Cascade)
+  materialId        String
+  material          Material        @relation(fields: [materialId], references: [id], onDelete: Restrict)
+  quantityUsed      Float // in material stockUnit
+  createdAt         DateTime        @default(now())
+
+  @@index([productionBatchId])
+}
+
+// ---------------------------------------------------------------------------
+// Sales / POS
+// ---------------------------------------------------------------------------
+
+model Sale {
+  id            String     @id @default(cuid())
+  saleNumber    String     @unique
+  customerId    String?
+  customer      Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  totalAmount   Decimal    @default(0) @db.Decimal(14, 2)
+  amountPaid    Decimal    @default(0) @db.Decimal(14, 2)
+  paymentMethod String? // Cash | M-Pesa | Bank
+  saleDate      DateTime   @default(now())
+  soldById      String?
+  notes         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  items         SaleItem[]
+  payments      Payment[]
+
+  @@index([customerId])
+  @@index([saleDate])
+}
+
+model SaleItem {
+  id        String  @id @default(cuid())
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantity  Float
+  unitPrice Decimal @db.Decimal(14, 2)
+  lineTotal Decimal @db.Decimal(14, 2)
+
+  @@index([saleId])
+}
+
+// ---------------------------------------------------------------------------
+// Accounting
+// ---------------------------------------------------------------------------
+
+model ExpenseCategory {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  expenses  Expense[]
+}
+
+model Expense {
+  id           String          @id @default(cuid())
+  categoryId   String
+  category     ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  amount       Decimal         @db.Decimal(14, 2)
+  description  String?
+  departmentId String?
+  department   Department?     @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  expenseDate  DateTime        @default(now())
+  createdById  String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([categoryId])
+  @@index([expenseDate])
+}
+
+model Payment {
+  id              String           @id @default(cuid())
+  direction       PaymentDirection
+  amount          Decimal          @db.Decimal(14, 2)
+  method          String // Cash | M-Pesa | Bank
+  supplierId      String?
+  supplier        Supplier?        @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  customerId      String?
+  customer        Customer?        @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  purchaseOrderId String?
+  purchaseOrder   PurchaseOrder?   @relation(fields: [purchaseOrderId], references: [id], onDelete: SetNull)
+  saleId          String?
+  sale            Sale?            @relation(fields: [saleId], references: [id], onDelete: SetNull)
+  note            String?
+  paymentDate     DateTime         @default(now())
+  createdById     String?
+  createdAt       DateTime         @default(now())
+
+  @@index([direction])
+  @@index([paymentDate])
+}
+
+// ---------------------------------------------------------------------------
+// Payroll
+// ---------------------------------------------------------------------------
+
+model Employee {
+  id           String        @id @default(cuid())
+  name         String
+  position     String?
+  departmentId String?
+  department   Department?   @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  baseSalary   Decimal       @default(0) @db.Decimal(14, 2)
+  phone        String?
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  payrollItems PayrollItem[]
+
+  @@index([departmentId])
+}
+
+model PayrollRun {
+  id          String        @id @default(cuid())
+  periodYear  Int
+  periodMonth Int // 1-12
+  status      PayrollStatus @default(DRAFT)
+  totalNet    Decimal       @default(0) @db.Decimal(14, 2)
+  notes       String?
+  approvedAt  DateTime?
+  paidAt      DateTime?
+  createdById String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  items       PayrollItem[]
+
+  @@unique([periodYear, periodMonth])
+}
+
+model PayrollItem {
+  id                 String     @id @default(cuid())
+  payrollRunId       String
+  payrollRun         PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  employeeId         String
+  employee           Employee   @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  baseSalary         Decimal    @db.Decimal(14, 2)
+  bonus              Decimal    @default(0) @db.Decimal(14, 2)
+  foodAllowance      Decimal    @default(0) @db.Decimal(14, 2)
+  transportAllowance Decimal    @default(0) @db.Decimal(14, 2)
+  deductions         Decimal    @default(0) @db.Decimal(14, 2)
+  netPay             Decimal    @db.Decimal(14, 2)
+
+  @@unique([payrollRunId, employeeId])
+}

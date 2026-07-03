@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__2f3f6171-00d6-4904-8ed1-07d10d1cf99e__list_organizations",
+      "mcp__2f3f6171-00d6-4904-8ed1-07d10d1cf99e__get_cost",
+      "mcp__2f3f6171-00d6-4904-8ed1-07d10d1cf99e__confirm_cost",
+      "mcp__2f3f6171-00d6-4904-8ed1-07d10d1cf99e__create_project",
+      "Bash(npx --yes create-next-app@latest . --ts --tailwind --app --src-dir --eslint --import-alias \"@/*\" --use-npm --no-turbopack --yes)",
+      "Bash(npx --yes create-next-app@latest klean-all-erp --ts --tailwind --app --src-dir --eslint --import-alias \"@/*\" --use-npm --no-turbopack --yes)",
+      "Bash(npm install *)",
+      "Bash(npx prisma *)"
+    ]
+  }
+}

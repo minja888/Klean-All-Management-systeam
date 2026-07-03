@@ -37,14 +37,14 @@ const MAIN_NAV: NavItem[] = [
   { key: "nav.sales", href: "/sales", module: "sales_pos", ready: true },
   { key: "nav.expenses", href: "/expenses", module: "expenses_payroll", ready: true },
   { key: "nav.payroll", href: "/payroll", module: "expenses_payroll", ready: true },
-  { key: "nav.accounting", href: "/accounting", module: "payments_accounting", ready: false },
-  { key: "nav.reports", href: "/reports", module: "profit_dashboard", ready: false },
+  { key: "nav.accounting", href: "/accounting", module: "payments_accounting", ready: true },
+  { key: "nav.reports", href: "/reports", module: "profit_dashboard", ready: true },
 ];
 
 const ADMIN_NAV: NavItem[] = [
   { key: "nav.users", href: "/admin/users", module: "users_settings", ready: true },
   { key: "nav.settings", href: "/admin/settings", module: "users_settings", ready: true },
-  { key: "nav.audit", href: "/admin/audit", module: "audit_log", ready: false },
+  { key: "nav.audit", href: "/admin/audit", module: "audit_log", ready: true },
 ];
 
 export interface ShellUser {

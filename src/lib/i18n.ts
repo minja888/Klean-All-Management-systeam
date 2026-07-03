@@ -274,6 +274,55 @@ export const dictionary = {
   "pstatus.DRAFT": { en: "Draft", sw: "Rasimu" },
   "pstatus.APPROVED": { en: "Approved", sw: "Imeidhinishwa" },
   "pstatus.PAID": { en: "Paid", sw: "Imelipwa" },
+
+  // Dashboard KPIs
+  "dash.netProfitMonth": { en: "Net profit (month)", sw: "Faida halisi (mwezi)" },
+  "dash.netProfitYTD": { en: "Net profit (YTD)", sw: "Faida halisi (mwaka)" },
+  "dash.salesMonth": { en: "Sales (month)", sw: "Mauzo (mwezi)" },
+  "dash.purchasesMonth": { en: "Purchases (month)", sw: "Manunuzi (mwezi)" },
+  "dash.supplierCredit": { en: "Supplier credit", sw: "Deni la wasambazaji" },
+  "dash.customerDebt": { en: "Customer debt", sw: "Deni la wateja" },
+  "dash.stockValue": { en: "Stock value", sw: "Thamani ya bidhaa" },
+  "dash.production": { en: "Production (month)", sw: "Uzalishaji (mwezi)" },
+  "dash.lowStockAlerts": { en: "Low-stock alerts", sw: "Tahadhari za bidhaa" },
+
+  // Accounting
+  "accounting.title": { en: "Accounting", sw: "Uhasibu" },
+  "accounting.payables": { en: "Payables (owed to suppliers)", sw: "Madeni (kwa wasambazaji)" },
+  "accounting.receivables": { en: "Receivables (owed by customers)", sw: "Malipo (kutoka kwa wateja)" },
+  "accounting.payments": { en: "Recent payments", sw: "Malipo ya hivi karibuni" },
+  "accounting.recordPayment": { en: "Record payment", sw: "Rekodi malipo" },
+  "accounting.totalPayable": { en: "Total payable", sw: "Jumla ya madeni" },
+  "accounting.totalReceivable": { en: "Total receivable", sw: "Jumla ya malipo" },
+  "accounting.pay": { en: "Pay", sw: "Lipa" },
+  "accounting.receive": { en: "Receive", sw: "Pokea" },
+  "accounting.balance": { en: "Balance", sw: "Salio" },
+  "accounting.amount": { en: "Amount", sw: "Kiasi" },
+  "accounting.method": { en: "Method", sw: "Njia" },
+
+  // Reports
+  "reports.title": { en: "Reports", sw: "Ripoti" },
+  "reports.from": { en: "From", sw: "Kutoka" },
+  "reports.to": { en: "To", sw: "Hadi" },
+  "reports.generate": { en: "Generate", sw: "Tengeneza" },
+  "reports.revenue": { en: "Revenue", sw: "Mapato" },
+  "reports.cogs": { en: "Cost of goods (COGS)", sw: "Gharama za bidhaa" },
+  "reports.grossProfit": { en: "Gross profit", sw: "Faida ghafi" },
+  "reports.expenses": { en: "Expenses", sw: "Matumizi" },
+  "reports.payroll": { en: "Payroll", sw: "Mishahara" },
+  "reports.operatingCost": { en: "Operating cost", sw: "Gharama za uendeshaji" },
+  "reports.netProfit": { en: "Net profit", sw: "Faida halisi" },
+  "reports.exportSales": { en: "Export sales (CSV)", sw: "Hamisha mauzo (CSV)" },
+  "reports.exportExpenses": { en: "Export expenses (CSV)", sw: "Hamisha matumizi (CSV)" },
+  "reports.exportProfit": { en: "Export profit (CSV)", sw: "Hamisha faida (CSV)" },
+
+  // Audit
+  "audit.title": { en: "Audit Log", sw: "Kumbukumbu za Mabadiliko" },
+  "audit.action": { en: "Action", sw: "Kitendo" },
+  "audit.entity": { en: "Entity", sw: "Kipengele" },
+  "audit.user": { en: "User", sw: "Mtumiaji" },
+  "audit.when": { en: "When", sw: "Lini" },
+  "audit.filterEntity": { en: "Filter by entity…", sw: "Chuja kwa kipengele…" },
 } as const;
 
 export type TranslationKey = keyof typeof dictionary;

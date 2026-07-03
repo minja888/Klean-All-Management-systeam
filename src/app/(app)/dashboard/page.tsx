@@ -1,49 +1,90 @@
-// Dashboard (server component). KPIs + profit engine arrive in Phase 6;
-// for now it confirms the signed-in user and shows the period placeholder.
-import { getSession } from "@/lib/auth";
-import { getServerLang } from "@/lib/server-i18n";
-import { translate } from "@/lib/i18n";
-import { canView } from "@/lib/access";
+"use client";
 
-export default async function DashboardPage() {
-  const session = await getSession();
-  const lang = await getServerLang();
-  const t = (k: Parameters<typeof translate>[1]) => translate(lang, k);
+import { useEffect, useState } from "react";
+import { useI18n } from "@/components/i18n-provider";
+import { useSession } from "@/components/session-provider";
+import { api } from "@/lib/client";
+import { PageHeader, Card, Money, Badge } from "@/components/ui";
 
-  const showFinancials = session ? canView(session.role, "profit_dashboard") : false;
+interface Dashboard {
+  showFinancials: boolean;
+  lowStockCount: number;
+  lowStock: { name: string; currentStock: number; reorderLevel: number; stockUnit: string }[];
+  productionOutput: number;
+  stockValue: number;
+  salesThisMonth?: number;
+  purchasesThisMonth?: number;
+  supplierCredit?: number;
+  customerDebt?: number;
+  netProfitMonth?: number;
+  netProfitYTD?: number;
+}
+
+function Kpi({ label, children, accent }: { label: string; children: React.ReactNode; accent?: string }) {
+  return (
+    <Card className="p-4">
+      <div className="text-sm text-slate-500">{label}</div>
+      <div className={"mt-1 text-2xl font-semibold " + (accent ?? "text-slate-800")}>{children}</div>
+    </Card>
+  );
+}
+
+export default function DashboardPage() {
+  const { t } = useI18n();
+  const { name } = useSession();
+  const [data, setData] = useState<Dashboard | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    api.get<Dashboard>("/api/dashboard").then(setData).catch((e) => setError(e instanceof Error ? e.message : "Failed"));
+  }, []);
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-800">{t("nav.dashboard")}</h1>
-        <p className="text-slate-500">
-          {t("auth.welcome")}, <span className="font-medium">{session?.name}</span>
-        </p>
+        <PageHeader title={t("nav.dashboard")} />
+        <p className="text-slate-500">{t("auth.welcome")}, <span className="font-medium">{name}</span></p>
       </div>
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          "nav.sales",
-          "nav.purchases",
-          "nav.inventory",
-          "nav.production",
-        ].map((key) => (
-          <div key={key} className="bg-white rounded-xl border border-slate-200 p-4">
-            <div className="text-sm text-slate-500">{t(key as Parameters<typeof translate>[1])}</div>
-            <div className="mt-2 text-2xl font-semibold text-slate-300">—</div>
-          </div>
-        ))}
-      </div>
-
-      {showFinancials && (
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <div className="text-sm text-slate-500">Net Profit (Month / YTD)</div>
-          <div className="mt-2 text-3xl font-semibold text-slate-300">TZS —</div>
-          <p className="mt-2 text-sm text-slate-400">
-            The profit engine and charts are implemented in Phase 6.
-          </p>
+      {data?.showFinancials && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Kpi label={t("dash.netProfitMonth")} accent={(data.netProfitMonth ?? 0) >= 0 ? "text-emerald-600" : "text-red-600"}><Money value={data.netProfitMonth ?? 0} /></Kpi>
+          <Kpi label={t("dash.netProfitYTD")} accent={(data.netProfitYTD ?? 0) >= 0 ? "text-emerald-600" : "text-red-600"}><Money value={data.netProfitYTD ?? 0} /></Kpi>
+          <Kpi label={t("dash.salesMonth")}><Money value={data.salesThisMonth ?? 0} /></Kpi>
+          <Kpi label={t("dash.purchasesMonth")}><Money value={data.purchasesThisMonth ?? 0} /></Kpi>
         </div>
       )}
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {data?.showFinancials && (
+          <>
+            <Kpi label={t("dash.supplierCredit")} accent="text-red-600"><Money value={data.supplierCredit ?? 0} /></Kpi>
+            <Kpi label={t("dash.customerDebt")} accent="text-red-600"><Money value={data.customerDebt ?? 0} /></Kpi>
+          </>
+        )}
+        <Kpi label={t("dash.stockValue")}><Money value={data?.stockValue ?? 0} /></Kpi>
+        <Kpi label={t("dash.production")}>{data?.productionOutput ?? 0}</Kpi>
+      </div>
+
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="font-semibold text-slate-800">{t("dash.lowStockAlerts")}</div>
+          <Badge color={(data?.lowStockCount ?? 0) > 0 ? "amber" : "emerald"}>{data?.lowStockCount ?? 0}</Badge>
+        </div>
+        {(!data || data.lowStock.length === 0) ? (
+          <p className="text-sm text-slate-400">{t("common.noData")}</p>
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {data.lowStock.map((m, i) => (
+              <li key={i} className="flex items-center justify-between py-2 text-sm">
+                <span className="text-slate-700">{m.name}</span>
+                <span className="text-amber-600">{m.currentStock} / {m.reorderLevel} {m.stockUnit}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
     </div>
   );
 }

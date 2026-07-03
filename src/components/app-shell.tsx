@@ -26,10 +26,10 @@ interface NavItem {
 
 const MAIN_NAV: NavItem[] = [
   { key: "nav.dashboard", href: "/dashboard", module: null, ready: true },
-  { key: "nav.materials", href: "/materials", module: "materials_inventory", ready: false },
-  { key: "nav.inventory", href: "/inventory", module: "materials_inventory", ready: false },
-  { key: "nav.suppliers", href: "/suppliers", module: "suppliers_purchases", ready: false },
-  { key: "nav.purchases", href: "/purchases", module: "suppliers_purchases", ready: false },
+  { key: "nav.materials", href: "/materials", module: "materials_inventory", ready: true },
+  { key: "nav.inventory", href: "/inventory", module: "materials_inventory", ready: true },
+  { key: "nav.suppliers", href: "/suppliers", module: "suppliers_purchases", ready: true },
+  { key: "nav.purchases", href: "/purchases", module: "suppliers_purchases", ready: true },
   { key: "nav.products", href: "/products", module: "production_bom", ready: false },
   { key: "nav.production", href: "/production", module: "production_bom", ready: false },
   { key: "nav.customers", href: "/customers", module: "sales_pos", ready: false },

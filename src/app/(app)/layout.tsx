@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/components/app-shell";
+import { SessionProvider } from "@/components/session-provider";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
@@ -18,11 +19,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <AppShell
-      user={{ name: session.name, email: session.email, role: session.role }}
-      companyName={companyName}
+    <SessionProvider
+      value={{
+        id: session.sub,
+        name: session.name,
+        email: session.email,
+        role: session.role,
+        departmentId: session.departmentId,
+      }}
     >
-      {children}
-    </AppShell>
+      <AppShell
+        user={{ name: session.name, email: session.email, role: session.role }}
+        companyName={companyName}
+      >
+        {children}
+      </AppShell>
+    </SessionProvider>
   );
 }

@@ -94,6 +94,71 @@ export const dictionary = {
   "settings.categoryName": { en: "Name", sw: "Jina" },
   "settings.departmentName": { en: "Department name", sw: "Jina la idara" },
   "settings.description": { en: "Description", sw: "Maelezo" },
+
+  // Common (extra)
+  "common.total": { en: "Total", sw: "Jumla" },
+  "common.all": { en: "All", sw: "Zote" },
+  "common.optional": { en: "optional", sw: "hiari" },
+  "common.back": { en: "Back", sw: "Rudi" },
+  "common.view": { en: "View", sw: "Angalia" },
+  "common.print": { en: "Print", sw: "Chapisha" },
+
+  // Materials
+  "materials.title": { en: "Materials", sw: "Malighafi" },
+  "materials.new": { en: "New material", sw: "Malighafi mpya" },
+  "materials.name": { en: "Name", sw: "Jina" },
+  "materials.category": { en: "Category", sw: "Aina" },
+  "materials.purchaseUnit": { en: "Purchase unit", sw: "Kipimo cha kununua" },
+  "materials.stockUnit": { en: "Stock unit", sw: "Kipimo cha kuhifadhi" },
+  "materials.conversionFactor": { en: "Conversion factor", sw: "Kigezo cha ubadilishaji" },
+  "materials.reorderLevel": { en: "Reorder level", sw: "Kiwango cha kuagiza tena" },
+  "materials.costPrice": { en: "Cost price", sw: "Bei ya gharama" },
+  "materials.currentStock": { en: "Current stock", sw: "Bidhaa iliyopo" },
+  "materials.conversionHint": { en: "Stock units per 1 purchase unit (e.g. metres per roll).", sw: "Vipimo vya hifadhi kwa kipimo 1 cha kununua." },
+
+  // Inventory
+  "inventory.title": { en: "Inventory", sw: "Bohari" },
+  "inventory.level": { en: "Stock level", sw: "Kiwango cha bidhaa" },
+  "inventory.value": { en: "Value", sw: "Thamani" },
+  "inventory.totalValue": { en: "Total stock value", sw: "Thamani ya jumla" },
+  "inventory.lowStockItems": { en: "Low-stock items", sw: "Bidhaa zinazopungua" },
+  "inventory.lowBadge": { en: "Low", sw: "Chini" },
+
+  // Suppliers
+  "suppliers.title": { en: "Suppliers", sw: "Wasambazaji" },
+  "suppliers.new": { en: "New supplier", sw: "Msambazaji mpya" },
+  "suppliers.name": { en: "Name", sw: "Jina" },
+  "suppliers.phone": { en: "Phone", sw: "Simu" },
+  "suppliers.email": { en: "Email", sw: "Barua pepe" },
+  "suppliers.address": { en: "Address", sw: "Anuani" },
+  "suppliers.creditOwed": { en: "Credit owed", sw: "Deni tunalodaiwa" },
+
+  // Purchases
+  "purchases.title": { en: "Purchases", sw: "Manunuzi" },
+  "purchases.new": { en: "New purchase order", sw: "Oda mpya ya manunuzi" },
+  "purchases.order": { en: "Order", sw: "Oda" },
+  "purchases.supplier": { en: "Supplier", sw: "Msambazaji" },
+  "purchases.status": { en: "Status", sw: "Hali" },
+  "purchases.date": { en: "Date", sw: "Tarehe" },
+  "purchases.total": { en: "Total", sw: "Jumla" },
+  "purchases.paid": { en: "Paid", sw: "Imelipwa" },
+  "purchases.credit": { en: "Credit", sw: "Deni" },
+  "purchases.items": { en: "Items", sw: "Bidhaa" },
+  "purchases.material": { en: "Material", sw: "Malighafi" },
+  "purchases.qty": { en: "Quantity", sw: "Kiasi" },
+  "purchases.unitPrice": { en: "Unit price", sw: "Bei kwa kipimo" },
+  "purchases.lineTotal": { en: "Line total", sw: "Jumla ya mstari" },
+  "purchases.addItem": { en: "Add item", sw: "Ongeza bidhaa" },
+  "purchases.amountPaid": { en: "Amount paid", sw: "Kiasi kilicholipwa" },
+  "purchases.receive": { en: "Receive", sw: "Pokea" },
+  "purchases.confirmReceive": { en: "Receive this order and add stock?", sw: "Pokea oda hii na uongeze bidhaa?" },
+  "purchases.notes": { en: "Notes", sw: "Maelezo" },
+
+  // Order status
+  "status.DRAFT": { en: "Draft", sw: "Rasimu" },
+  "status.ORDERED": { en: "Ordered", sw: "Imeagizwa" },
+  "status.RECEIVED": { en: "Received", sw: "Imepokelewa" },
+  "status.CANCELLED": { en: "Cancelled", sw: "Imeghairiwa" },
 } as const;
 
 export type TranslationKey = keyof typeof dictionary;

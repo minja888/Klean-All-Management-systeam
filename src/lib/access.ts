@@ -25,7 +25,7 @@ export type Module =
 
 export const ACCESS_MATRIX: Record<Module, Record<Role, AccessLevel>> = {
   users_settings:      { ADMIN: "F", MANAGER: "-", ACCOUNTING: "-", WORKER: "-" },
-  materials_inventory: { ADMIN: "F", MANAGER: "V", ACCOUNTING: "V", WORKER: "O" },
+  materials_inventory: { ADMIN: "F", MANAGER: "V", ACCOUNTING: "V", WORKER: "V" },
   suppliers_purchases: { ADMIN: "F", MANAGER: "V", ACCOUNTING: "F", WORKER: "-" },
   production_bom:      { ADMIN: "F", MANAGER: "F", ACCOUNTING: "V", WORKER: "O" },
   sales_pos:           { ADMIN: "F", MANAGER: "F", ACCOUNTING: "F", WORKER: "-" },

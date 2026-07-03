@@ -159,6 +159,43 @@ export const dictionary = {
   "status.ORDERED": { en: "Ordered", sw: "Imeagizwa" },
   "status.RECEIVED": { en: "Received", sw: "Imepokelewa" },
   "status.CANCELLED": { en: "Cancelled", sw: "Imeghairiwa" },
+
+  // Products & BOM
+  "products.title": { en: "Products", sw: "Bidhaa" },
+  "products.new": { en: "New product", sw: "Bidhaa mpya" },
+  "products.sku": { en: "SKU", sw: "SKU" },
+  "products.name": { en: "Name", sw: "Jina" },
+  "products.unit": { en: "Unit", sw: "Kipimo" },
+  "products.sellingPrice": { en: "Selling price", sw: "Bei ya kuuza" },
+  "products.currentStock": { en: "In stock", sw: "Iliyopo" },
+  "products.reorderLevel": { en: "Reorder level", sw: "Kiwango cha kuagiza tena" },
+  "products.bom": { en: "BOM", sw: "Viungo" },
+  "products.editBom": { en: "Edit BOM", sw: "Hariri viungo" },
+  "products.bomFor": { en: "Bill of Materials", sw: "Orodha ya malighafi" },
+  "products.quantityPerUnit": { en: "Qty per unit", sw: "Kiasi kwa kipimo" },
+  "products.addMaterial": { en: "Add material", sw: "Ongeza malighafi" },
+  "products.saveBom": { en: "Save BOM", sw: "Hifadhi viungo" },
+
+  // Production
+  "production.title": { en: "Production", sw: "Uzalishaji" },
+  "production.new": { en: "New batch", sw: "Kundi jipya" },
+  "production.batch": { en: "Batch", sw: "Kundi" },
+  "production.product": { en: "Product", sw: "Bidhaa" },
+  "production.planned": { en: "Planned", sw: "Iliyopangwa" },
+  "production.produced": { en: "Produced", sw: "Iliyozalishwa" },
+  "production.waste": { en: "Waste", sw: "Taka" },
+  "production.status": { en: "Status", sw: "Hali" },
+  "production.complete": { en: "Complete", sw: "Kamilisha" },
+  "production.completeTitle": { en: "Complete batch", sw: "Kamilisha kundi" },
+  "production.quantityProduced": { en: "Quantity produced", sw: "Kiasi kilichozalishwa" },
+  "production.wasteQuantity": { en: "Waste quantity", sw: "Kiasi cha taka" },
+  "production.usageHint": { en: "Materials will be consumed from the recipe (BOM) × quantity produced.", sw: "Malighafi zitatumika kutoka kwenye viungo × kiasi kilichozalishwa." },
+
+  // Batch status
+  "bstatus.PLANNED": { en: "Planned", sw: "Imepangwa" },
+  "bstatus.IN_PROGRESS": { en: "In progress", sw: "Inaendelea" },
+  "bstatus.COMPLETED": { en: "Completed", sw: "Imekamilika" },
+  "bstatus.CANCELLED": { en: "Cancelled", sw: "Imeghairiwa" },
 } as const;
 
 export type TranslationKey = keyof typeof dictionary;

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { handle, ok, ApiError } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { requireRole } from "@/lib/rbac";
+import { requireRole, requireUser } from "@/lib/rbac";
 import { writeAudit } from "@/lib/audit";
 import { Role } from "@/generated/prisma/enums";
 
@@ -14,7 +14,9 @@ const schema = z.object({
 
 export const GET = handle(async () => {
   const session = await getSession();
-  requireRole(session, [Role.ADMIN]);
+  // Any signed-in user may read the department list (needed by many forms);
+  // creating/editing/deleting departments stays ADMIN-only.
+  requireUser(session);
   const departments = await prisma.department.findMany({
     orderBy: { name: "asc" },
     include: { _count: { select: { users: true, employees: true } } },

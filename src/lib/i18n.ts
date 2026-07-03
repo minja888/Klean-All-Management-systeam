@@ -196,6 +196,46 @@ export const dictionary = {
   "bstatus.IN_PROGRESS": { en: "In progress", sw: "Inaendelea" },
   "bstatus.COMPLETED": { en: "Completed", sw: "Imekamilika" },
   "bstatus.CANCELLED": { en: "Cancelled", sw: "Imeghairiwa" },
+
+  // Customers
+  "customers.title": { en: "Customers", sw: "Wateja" },
+  "customers.new": { en: "New customer", sw: "Mteja mpya" },
+  "customers.name": { en: "Name", sw: "Jina" },
+  "customers.phone": { en: "Phone", sw: "Simu" },
+  "customers.email": { en: "Email", sw: "Barua pepe" },
+  "customers.address": { en: "Address", sw: "Anuani" },
+  "customers.debt": { en: "Debt", sw: "Deni" },
+
+  // POS
+  "pos.title": { en: "Point of Sale", sw: "Mauzo (POS)" },
+  "pos.cart": { en: "Cart", sw: "Kikapu" },
+  "pos.product": { en: "Product", sw: "Bidhaa" },
+  "pos.qty": { en: "Qty", sw: "Kiasi" },
+  "pos.price": { en: "Price", sw: "Bei" },
+  "pos.total": { en: "Total", sw: "Jumla" },
+  "pos.amountPaid": { en: "Amount paid", sw: "Kiasi kilicholipwa" },
+  "pos.paymentMethod": { en: "Payment method", sw: "Njia ya malipo" },
+  "pos.customer": { en: "Customer", sw: "Mteja" },
+  "pos.walkIn": { en: "Walk-in", sw: "Mteja wa papo hapo" },
+  "pos.emptyCart": { en: "Cart is empty. Add products.", sw: "Kikapu ni tupu. Ongeza bidhaa." },
+  "pos.completeSale": { en: "Complete sale", sw: "Kamilisha mauzo" },
+  "pos.balance": { en: "Balance (debt)", sw: "Salio (deni)" },
+  "pos.searchProduct": { en: "Search products…", sw: "Tafuta bidhaa…" },
+
+  // Sales
+  "sales.title": { en: "Sales", sw: "Mauzo" },
+  "sales.number": { en: "Sale", sw: "Mauzo" },
+  "sales.date": { en: "Date", sw: "Tarehe" },
+  "sales.receipt": { en: "Receipt", sw: "Risiti" },
+
+  // Payment methods
+  "method.Cash": { en: "Cash", sw: "Fedha taslimu" },
+  "method.M-Pesa": { en: "M-Pesa", sw: "M-Pesa" },
+  "method.Bank": { en: "Bank", sw: "Benki" },
+
+  // Receipt
+  "receipt.title": { en: "Receipt", sw: "Risiti" },
+  "receipt.thankYou": { en: "Thank you for your business!", sw: "Asante kwa biashara!" },
 } as const;
 
 export type TranslationKey = keyof typeof dictionary;

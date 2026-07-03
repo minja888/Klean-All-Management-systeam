@@ -1,0 +1,53 @@
+// /api/customers/[id] — update & delete
+import { z } from "zod";
+import { handle, ok, NotFound, ApiError } from "@/lib/api";
+import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/auth";
+import { requireWrite } from "@/lib/rbac";
+import { writeAudit } from "@/lib/audit";
+
+const updateSchema = z.object({
+  name: z.string().min(1).optional(),
+  phone: z.string().nullish(),
+  email: z.string().nullish(),
+  address: z.string().nullish(),
+});
+
+export const PUT = handle(async (req, ctx) => {
+  const session = await getSession();
+  const actor = requireWrite(session, "sales_pos");
+  const { id } = await ctx.params;
+
+  const before = await prisma.customer.findUnique({ where: { id } });
+  if (!before) throw NotFound("Customer not found");
+
+  const input = updateSchema.parse(await req.json().catch(() => ({})));
+  const customer = await prisma.customer.update({
+    where: { id },
+    data: {
+      name: input.name,
+      phone: input.phone === undefined ? undefined : input.phone,
+      email: input.email === undefined ? undefined : input.email,
+      address: input.address === undefined ? undefined : input.address,
+    },
+  });
+  await writeAudit({ action: "UPDATE", entity: "Customer", entityId: id, user: actor, before, after: customer });
+  return ok(customer);
+});
+
+export const DELETE = handle(async (_req, ctx) => {
+  const session = await getSession();
+  const actor = requireWrite(session, "sales_pos");
+  const { id } = await ctx.params;
+
+  const before = await prisma.customer.findUnique({ where: { id } });
+  if (!before) throw NotFound("Customer not found");
+
+  try {
+    await prisma.customer.delete({ where: { id } }); // sales keep history (SetNull)
+  } catch {
+    throw new ApiError("Cannot delete this customer.", 409);
+  }
+  await writeAudit({ action: "DELETE", entity: "Customer", entityId: id, user: actor, before });
+  return ok({ deleted: true });
+});

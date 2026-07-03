@@ -43,6 +43,8 @@ export const dictionary = {
   "auth.signingIn": { en: "Signing in…", sw: "Inaingia…" },
   "auth.welcome": { en: "Welcome back", sw: "Karibu tena" },
   "auth.invalid": { en: "Invalid email or password.", sw: "Barua pepe au nywila si sahihi." },
+  "auth.show": { en: "Show", sw: "Onyesha" },
+  "auth.hide": { en: "Hide", sw: "Ficha" },
 
   // Navigation / modules
   "nav.dashboard": { en: "Dashboard", sw: "Dashibodi" },

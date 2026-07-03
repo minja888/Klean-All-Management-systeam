@@ -50,6 +50,7 @@ export default function UsersPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [form, setForm] = useState<FormState | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -229,14 +230,24 @@ export default function UsersPage() {
               </Field>
 
               <Field label={t("auth.password")}>
-                <input
-                  type="password"
-                  value={form.password}
-                  required={!form.id}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className={inputClass}
-                  placeholder={form.id ? "••••••" : ""}
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={form.password}
+                    required={!form.id}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    className={inputClass + " pr-16"}
+                    placeholder={form.id ? "••••••" : ""}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((s) => !s)}
+                    className="absolute inset-y-0 right-2 my-auto h-6 px-2 text-xs font-medium text-emerald-700 hover:text-emerald-800"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? t("auth.hide") : t("auth.show")}
+                  </button>
+                </div>
                 {form.id && <p className="text-xs text-slate-400 mt-1">{t("users.passwordHint")}</p>}
               </Field>
 

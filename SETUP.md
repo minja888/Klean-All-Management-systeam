@@ -45,19 +45,18 @@ Open http://localhost:3000 and sign in.
 
 ---
 
-## 3. What exists so far (Phase 1 ✅)
+## 3. What exists (all 6 phases ✅)
 
-- JWT auth in an httpOnly cookie, bcrypt password hashing, login/logout/me.
-- Route-guard middleware + role-based access control (4 roles) from a shared matrix.
-- Bilingual EN/SW toggle (remembered in a cookie).
-- Admin **Settings**: Company info, Departments, Material Categories, Expense Categories.
-- Admin **Users**: create/edit/delete, assign role + department.
-- Audit logging on every create/update/delete.
-- Full database schema for **all** phases already migrated (23 tables).
+- **Phase 1** — JWT auth (httpOnly cookie) + bcrypt; middleware guard; 4-role RBAC; EN/SW toggle; Settings (company, departments, material/expense categories); Users; audit logging.
+- **Phase 2** — Materials (units + conversion + cost); Suppliers (credit owed); Purchase Orders with line items; **Receive** converts rolls→metres, adds stock, records movement; Inventory with low-stock alerts + value.
+- **Phase 3** — Products; **BOM** editor; Production batches; **Complete** consumes materials (BOM × qty) and produces finished goods, all in one transaction; workers scoped to their department.
+- **Phase 4** — Customers (debt); **POS** cart + checkout; printable receipts; sales history.
+- **Phase 5** — Expenses; Employees; monthly **Payroll** runs (netPay = base + bonus + food + transport − deductions), DRAFT → APPROVED → PAID.
+- **Phase 6** — **Profit engine** (revenue − COGS − expenses − payroll); Dashboard KPIs (net profit month + YTD, sales, purchases, credit, debt, stock value, production, low-stock); Accounting payables/receivables + payments; Reports with CSV export; Audit Log UI.
 
-Phases 2–6 (Materials/Purchases, Production, Sales/POS, Expenses/Payroll,
-Profit engine/Dashboard/Reports/Audit UI) are the next builds — the navigation
-shows them as **“soon”**.
+Every phase compiles with `npm run build`. Financial figures are visible only to ADMIN + ACCOUNTING.
+
+> Reports: “Excel” export is CSV (opens in Excel). For PDF, use the browser’s Print → Save as PDF.
 
 ---
 

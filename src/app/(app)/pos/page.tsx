@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useI18n } from "@/components/i18n-provider";
+import { PageTips } from "@/components/page-tips";
 import { api } from "@/lib/client";
 import { formatTZS, toNumber } from "@/lib/money";
 import { PageHeader, Card, inputClass, btnPrimary, Money } from "@/components/ui";
@@ -76,6 +77,7 @@ export default function PosPage() {
   return (
     <div className="space-y-4">
       <PageHeader title={t("pos.title")} />
+      <PageTips tipKey="tips.pos" />
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="grid gap-4 lg:grid-cols-3">

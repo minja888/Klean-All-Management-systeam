@@ -144,6 +144,13 @@ export function AppShell({
               <div className="text-sm font-medium text-slate-800">{user.name}</div>
               <div className="text-xs text-slate-500">{t(`role.${user.role}` as TranslationKey)}</div>
             </div>
+            <a
+              href="/change-password?forced=0"
+              title={t("auth.changePassword")}
+              className="text-sm rounded-md border border-slate-300 px-2.5 py-1.5 text-slate-600 hover:bg-slate-50"
+            >
+              🔑
+            </a>
             <button
               onClick={logout}
               className="text-sm rounded-md border border-slate-300 px-3 py-1.5 text-slate-600 hover:bg-slate-50"

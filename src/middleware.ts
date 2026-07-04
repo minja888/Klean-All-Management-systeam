@@ -12,8 +12,13 @@ import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // The login API must stay open so users can obtain a session.
-  if (pathname === "/api/auth/login") {
+  // Public auth APIs: login, self-registration, role list, forgot-password.
+  if (
+    pathname === "/api/auth/login" ||
+    pathname === "/api/auth/register" ||
+    pathname === "/api/auth/role-users" ||
+    pathname === "/api/auth/forgot-password"
+  ) {
     return NextResponse.next();
   }
 

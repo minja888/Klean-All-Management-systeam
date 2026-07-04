@@ -72,6 +72,10 @@ model User {
   passwordHash String
   name         String
   role         Role        @default(WORKER)
+  /// Job title in the company (e.g. Director, Storekeeper) — informational.
+  position     String?
+  /// Force the user to set their own password on next login.
+  mustChangePassword Boolean @default(false)
   isActive     Boolean     @default(true)
   departmentId String?
   department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)

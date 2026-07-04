@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useI18n } from "@/components/i18n-provider";
+import { PageTips } from "@/components/page-tips";
 import { useCanWrite } from "@/components/session-provider";
 import { api } from "@/lib/client";
 import { PageHeader, Modal, Field, inputClass, btnPrimary, btnSecondary, Money, EmptyRow } from "@/components/ui";
@@ -62,6 +63,7 @@ export default function SuppliersPage() {
     <div className="space-y-4">
       <PageHeader title={t("suppliers.title")}
         action={canWrite && <button onClick={openCreate} className={btnPrimary}>+ {t("suppliers.new")}</button>} />
+      <PageTips tipKey="tips.suppliers" />
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto">

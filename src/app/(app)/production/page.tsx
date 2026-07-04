@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useI18n } from "@/components/i18n-provider";
+import { PageTips } from "@/components/page-tips";
 import { useSession, useCanWrite } from "@/components/session-provider";
 import { api } from "@/lib/client";
 import { PageHeader, Modal, Field, inputClass, btnPrimary, btnSecondary, Badge, EmptyRow } from "@/components/ui";
@@ -99,6 +100,7 @@ export default function ProductionPage() {
     <div className="space-y-4">
       <PageHeader title={t("production.title")}
         action={canWrite && <button onClick={openCreate} className={btnPrimary}>+ {t("production.new")}</button>} />
+      <PageTips tipKey="tips.production" />
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto">

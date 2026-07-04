@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useI18n } from "@/components/i18n-provider";
+import { PageTips } from "@/components/page-tips";
 import { api } from "@/lib/client";
 import { PageHeader, Money, EmptyRow } from "@/components/ui";
 import { ReceiptModal } from "@/components/receipt";
@@ -30,6 +31,7 @@ export default function SalesPage() {
   return (
     <div className="space-y-4">
       <PageHeader title={t("sales.title")} />
+      <PageTips tipKey="tips.sales" />
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto">

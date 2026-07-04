@@ -18,9 +18,17 @@ interface UserRow {
   name: string;
   email: string;
   role: RoleValue;
+  position: string | null;
   isActive: boolean;
   departmentId: string | null;
   department: Department | null;
+}
+
+interface ResetRequest {
+  id: string;
+  userName: string;
+  userEmail: string;
+  createdAt: string;
 }
 
 interface FormState {
@@ -29,6 +37,7 @@ interface FormState {
   email: string;
   password: string;
   role: RoleValue;
+  position: string;
   departmentId: string;
   isActive: boolean;
 }
@@ -38,6 +47,7 @@ const emptyForm: FormState = {
   email: "",
   password: "",
   role: "WORKER",
+  position: "",
   departmentId: "",
   isActive: true,
 };
@@ -54,6 +64,8 @@ export default function UsersPage() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
+  const [resetRequests, setResetRequests] = useState<ResetRequest[]>([]);
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -64,6 +76,11 @@ export default function UsersPage() {
       ]);
       setUsers(u);
       setDepartments(d);
+      // Recent "forgot password" requests (last 7 days) surface as a banner.
+      try {
+        const from = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+        setResetRequests(await api.get<ResetRequest[]>(`/api/audit?entity=PasswordResetRequest&from=${from}`));
+      } catch { /* non-admin or none */ }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load");
     } finally {
@@ -87,9 +104,20 @@ export default function UsersPage() {
       email: u.email,
       password: "",
       role: u.role,
+      position: u.position ?? "",
       departmentId: u.departmentId ?? "",
       isActive: u.isActive,
     });
+  }
+
+  /** One-click approval of a pending registration (role/department via Edit). */
+  async function approve(u: UserRow) {
+    try {
+      await api.put(`/api/users/${u.id}`, { isActive: true });
+      await load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed");
+    }
   }
 
   async function save(e: React.FormEvent) {
@@ -102,6 +130,7 @@ export default function UsersPage() {
         name: form.name,
         email: form.email,
         role: form.role,
+        position: form.position || null,
         departmentId: form.departmentId || null,
         isActive: form.isActive,
         ...(form.password ? { password: form.password } : {}),
@@ -144,6 +173,21 @@ export default function UsersPage() {
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
+      {/* Forgot-password requests — Admin sets a temporary password via Edit. */}
+      {resetRequests.length > 0 && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <div className="font-medium mb-1">🔑 {t("users.resetRequests")} ({resetRequests.length})</div>
+          <ul className="list-disc ml-5 space-y-0.5">
+            {resetRequests.slice(0, 5).map((r) => (
+              <li key={r.id}>
+                {r.userName} <span className="text-amber-600">({r.userEmail})</span> — {new Date(r.createdAt).toLocaleString()}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-1 text-xs text-amber-600">{t("users.resetHint")}</p>
+        </div>
+      )}
+
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-slate-500 text-left">
@@ -151,6 +195,7 @@ export default function UsersPage() {
               <th className="px-4 py-3 font-medium">{t("users.name")}</th>
               <th className="px-4 py-3 font-medium">{t("auth.email")}</th>
               <th className="px-4 py-3 font-medium">{t("users.role")}</th>
+              <th className="px-4 py-3 font-medium">{t("users.position")}</th>
               <th className="px-4 py-3 font-medium">{t("users.department")}</th>
               <th className="px-4 py-3 font-medium">{t("users.status")}</th>
               <th className="px-4 py-3 font-medium text-right">{t("common.actions")}</th>
@@ -159,34 +204,40 @@ export default function UsersPage() {
           <tbody className="divide-y divide-slate-100">
             {loading ? (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
+                <td colSpan={7} className="px-4 py-6 text-center text-slate-400">
                   {t("common.loading")}
                 </td>
               </tr>
             ) : users.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-slate-400">
+                <td colSpan={7} className="px-4 py-6 text-center text-slate-400">
                   {t("common.noData")}
                 </td>
               </tr>
             ) : (
               users.map((u) => (
-                <tr key={u.id} className="hover:bg-slate-50">
+                <tr key={u.id} className={u.isActive ? "hover:bg-slate-50" : "bg-amber-50/60"}>
                   <td className="px-4 py-3 font-medium text-slate-800">{u.name}</td>
                   <td className="px-4 py-3 text-slate-600">{u.email}</td>
                   <td className="px-4 py-3 text-slate-600">{t(`role.${u.role}` as TranslationKey)}</td>
+                  <td className="px-4 py-3 text-slate-600">{u.position ?? "—"}</td>
                   <td className="px-4 py-3 text-slate-600">{u.department?.name ?? "—"}</td>
                   <td className="px-4 py-3">
                     <span
                       className={
                         "inline-flex rounded-full px-2 py-0.5 text-xs " +
-                        (u.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500")
+                        (u.isActive ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700")
                       }
                     >
-                      {u.isActive ? t("users.active") : t("users.inactive")}
+                      {u.isActive ? t("users.active") : t("users.pending")}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right space-x-3 whitespace-nowrap">
+                    {!u.isActive && (
+                      <button onClick={() => approve(u)} className="text-blue-600 hover:underline font-medium">
+                        {t("users.approve")}
+                      </button>
+                    )}
                     <button onClick={() => openEdit(u)} className="text-emerald-700 hover:underline">
                       {t("action.edit")}
                     </button>
@@ -249,6 +300,16 @@ export default function UsersPage() {
                   </button>
                 </div>
                 {form.id && <p className="text-xs text-slate-400 mt-1">{t("users.passwordHint")}</p>}
+                <p className="text-xs text-slate-400 mt-1">{t("users.tempPasswordNote")}</p>
+              </Field>
+
+              <Field label={t("users.position")}>
+                <input
+                  value={form.position}
+                  onChange={(e) => setForm({ ...form, position: e.target.value })}
+                  className={inputClass}
+                  placeholder="Storekeeper, Cashier…"
+                />
               </Field>
 
               <Field label={t("users.role")}>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useI18n } from "@/components/i18n-provider";
+import { PageTips } from "@/components/page-tips";
 import { useSession } from "@/components/session-provider";
 import { api } from "@/lib/client";
 import { PageHeader, Card, Money, Badge, EmptyRow } from "@/components/ui";
@@ -41,6 +42,7 @@ export default function InventoryPage() {
   return (
     <div className="space-y-4">
       <PageHeader title={t("inventory.title")} />
+      <PageTips tipKey="tips.inventory" />
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="grid gap-4 sm:grid-cols-2">

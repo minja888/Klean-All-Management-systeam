@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useI18n } from "@/components/i18n-provider";
+import { PageTips } from "@/components/page-tips";
 import { useCanWrite } from "@/components/session-provider";
 import { api } from "@/lib/client";
 import { formatTZS } from "@/lib/money";
@@ -24,6 +25,7 @@ export default function PayrollPage() {
   return (
     <div className="space-y-4">
       <PageHeader title={t("payroll.title")} />
+      <PageTips tipKey="tips.payroll" />
       <div className="flex gap-1 border-b border-slate-200">
         {(["employees", "runs"] as Tab[]).map((tb) => (
           <button key={tb} onClick={() => setTab(tb)}

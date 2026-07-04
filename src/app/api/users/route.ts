@@ -13,6 +13,8 @@ const publicUser = {
   name: true,
   email: true,
   role: true,
+  position: true,
+  mustChangePassword: true,
   isActive: true,
   departmentId: true,
   department: { select: { id: true, name: true } },
@@ -25,6 +27,7 @@ const createSchema = z
     email: z.email(),
     password: z.string().min(6, "Password must be at least 6 characters"),
     role: z.enum(["ADMIN", "MANAGER", "ACCOUNTING", "WORKER"]),
+    position: z.string().nullish(),
     departmentId: z.string().nullish(),
     isActive: z.boolean().optional(),
   })
@@ -37,9 +40,10 @@ export const GET = handle(async () => {
   const session = await getSession();
   requireRole(session, [Role.ADMIN]);
 
+  // Pending (unapproved) registrations first, then newest.
   const users = await prisma.user.findMany({
     select: publicUser,
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ isActive: "asc" }, { createdAt: "desc" }],
   });
   return ok(users);
 });
@@ -60,8 +64,11 @@ export const POST = handle(async (req) => {
       email,
       passwordHash: await hashPassword(input.password),
       role: input.role,
+      position: input.position ?? null,
       departmentId: input.departmentId ?? null,
       isActive: input.isActive ?? true,
+      // Admin set this password -> the person must create their own on first login.
+      mustChangePassword: true,
     },
     select: publicUser,
   });

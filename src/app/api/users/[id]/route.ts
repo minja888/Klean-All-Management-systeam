@@ -12,6 +12,8 @@ const publicUser = {
   name: true,
   email: true,
   role: true,
+  position: true,
+  mustChangePassword: true,
   isActive: true,
   departmentId: true,
   department: { select: { id: true, name: true } },
@@ -24,6 +26,7 @@ const updateSchema = z
     email: z.email().optional(),
     password: z.string().min(6).optional(),
     role: z.enum(["ADMIN", "MANAGER", "ACCOUNTING", "WORKER"]).optional(),
+    position: z.string().nullish(),
     departmentId: z.string().nullish(),
     isActive: z.boolean().optional(),
   })
@@ -55,9 +58,11 @@ export const PUT = handle(async (req, ctx) => {
       name: input.name,
       email: input.email?.toLowerCase(),
       role: input.role,
+      position: input.position === undefined ? undefined : input.position,
       departmentId: input.departmentId === undefined ? undefined : input.departmentId,
       isActive: input.isActive,
-      ...(input.password ? { passwordHash: await hashPassword(input.password) } : {}),
+      // Admin resetting someone's password -> they must set their own next login.
+      ...(input.password ? { passwordHash: await hashPassword(input.password), mustChangePassword: true } : {}),
     },
     select: publicUser,
   });

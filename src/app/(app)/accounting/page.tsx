@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useI18n } from "@/components/i18n-provider";
+import { PageTips } from "@/components/page-tips";
 import { useCanWrite } from "@/components/session-provider";
 import { api } from "@/lib/client";
 import { PageHeader, Card, Modal, Field, inputClass, btnPrimary, btnSecondary, Money, EmptyRow } from "@/components/ui";
@@ -50,6 +51,7 @@ export default function AccountingPage() {
   return (
     <div className="space-y-4">
       <PageHeader title={t("accounting.title")} />
+      <PageTips tipKey="tips.accounting" />
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="grid gap-4 lg:grid-cols-2">

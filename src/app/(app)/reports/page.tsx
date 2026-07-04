@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useI18n } from "@/components/i18n-provider";
+import { PageTips } from "@/components/page-tips";
 import { api } from "@/lib/client";
 import { PageHeader, Card, Field, inputClass, btnPrimary, btnSecondary, Money } from "@/components/ui";
 
@@ -44,6 +45,7 @@ export default function ReportsPage() {
   return (
     <div className="space-y-4">
       <PageHeader title={t("reports.title")} />
+      <PageTips tipKey="tips.reports" />
 
       <Card className="p-4">
         <div className="flex flex-wrap items-end gap-3">

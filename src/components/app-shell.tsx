@@ -137,7 +137,10 @@ export function AppShell({
       {/* Main column */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-4 gap-4">
-          <div className="text-sm text-slate-500">{t("app.tagline")}</div>
+          <div className="text-sm text-slate-500 min-w-0 truncate">
+            <span className="hidden md:inline">{t("app.tagline")} · </span>
+            <span className="font-medium text-slate-700">📅 {new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</span>
+          </div>
           <div className="flex items-center gap-4">
             <LanguageToggle />
             <div className="text-right leading-tight hidden sm:block">

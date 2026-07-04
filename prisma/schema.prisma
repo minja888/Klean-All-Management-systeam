@@ -126,6 +126,10 @@ model CapitalEntry {
   id          String      @id @default(cuid())
   type        CapitalType
   amount      Decimal     @db.Decimal(14, 2)
+  /// Who the money came from / went to (lender name for loans).
+  partyName   String?
+  /// Contact / extra info for that person (phone, address…).
+  partyInfo   String?
   description String?
   entryDate   DateTime    @default(now())
   createdById String?

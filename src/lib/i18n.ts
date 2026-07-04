@@ -384,6 +384,40 @@ export const dictionary = {
   "period.thisMonth": { en: "This month", sw: "Mwezi huu" },
   "period.thisYear": { en: "This year", sw: "Mwaka huu" },
 
+  // Capital party (lender details)
+  "capital.partyName": { en: "Person / lender name", sw: "Jina la mtu / mkopeshaji" },
+  "capital.partyInfo": { en: "Their info (phone, address…)", sw: "Taarifa zake (simu, anuani…)" },
+  "capital.creditors": { en: "People we owe (creditors)", sw: "Watu tunaowadai (wadai)" },
+  "capital.partyRequired": { en: "For loans, enter the lender's name.", sw: "Kwa mkopo, andika jina la mkopeshaji." },
+
+  // Balance sheet
+  "accounting.tabBalance": { en: "Balance Sheet", sw: "Mizania" },
+  "bs.assets": { en: "Assets", sw: "Mali" },
+  "bs.cash": { en: "Cash", sw: "Fedha taslimu" },
+  "bs.materialStock": { en: "Material stock (at cost)", sw: "Malighafi (kwa gharama)" },
+  "bs.productStock": { en: "Finished goods (at selling price)", sw: "Bidhaa tayari (kwa bei ya kuuza)" },
+  "bs.receivables": { en: "Customer debts (receivables)", sw: "Madeni ya wateja" },
+  "bs.liabilities": { en: "Liabilities", sw: "Madeni" },
+  "bs.payables": { en: "Owed to suppliers", sw: "Tunachodaiwa na wasambazaji" },
+  "bs.loans": { en: "Loans outstanding", sw: "Mikopo inayodaiwa" },
+  "bs.equity": { en: "Equity", sw: "Mtaji" },
+  "bs.capital": { en: "Owner's capital", sw: "Mtaji wa mmiliki" },
+  "bs.retained": { en: "Retained profit (all-time)", sw: "Faida iliyobaki (tangu mwanzo)" },
+  "bs.totalAssets": { en: "Total assets", sw: "Jumla ya mali" },
+  "bs.totalLiabEquity": { en: "Liabilities + Equity", sw: "Madeni + Mtaji" },
+  "bs.asOf": { en: "As of", sw: "Hadi" },
+
+  // Materials report
+  "matreport.tab": { en: "In / Out report", sw: "Ripoti (Ingia/Toka)" },
+  "matreport.stockTab": { en: "Stock levels", sw: "Kiwango cha bidhaa" },
+  "matreport.in": { en: "Came in", sw: "Imeingia" },
+  "matreport.out": { en: "Used / out", sw: "Imetumika" },
+  "matreport.waste": { en: "Waste", sw: "Taka" },
+  "matreport.remaining": { en: "Remaining now", sw: "Iliyopo sasa" },
+  "matreport.history": { en: "Movement history", sw: "Historia ya mizunguko" },
+  "matreport.clickHint": { en: "Click a material name to see its full history.", sw: "Bonyeza jina la malighafi kuona historia yake yote." },
+  "matreport.by": { en: "By", sw: "Na" },
+
   // Reports
   "reports.title": { en: "Reports", sw: "Ripoti" },
   "reports.from": { en: "From", sw: "Kutoka" },

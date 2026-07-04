@@ -9,7 +9,7 @@ import { formatTZS } from "@/lib/money";
 import { PageHeader, Card, Modal, Field, inputClass, btnPrimary, btnSecondary, Money, Badge, EmptyRow } from "@/components/ui";
 import type { TranslationKey } from "@/lib/i18n";
 
-type Tab = "payments" | "capital" | "ledger";
+type Tab = "payments" | "capital" | "ledger" | "balance";
 
 export default function AccountingPage() {
   const { t } = useI18n();
@@ -26,6 +26,7 @@ export default function AccountingPage() {
           ["payments", "accounting.tabPayments"],
           ["capital", "accounting.tabCapital"],
           ["ledger", "accounting.tabLedger"],
+          ["balance", "accounting.tabBalance"],
         ] as [Tab, TranslationKey][]).map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}
             className={"px-4 py-2 text-sm font-medium -mb-px border-b-2 whitespace-nowrap " +
@@ -38,7 +39,91 @@ export default function AccountingPage() {
       {tab === "payments" && <PaymentsTab canWrite={canWrite} />}
       {tab === "capital" && <CapitalTab canWrite={canWrite} />}
       {tab === "ledger" && <LedgerTab />}
+      {tab === "balance" && <BalanceSheetTab goTo={(tb) => setTab(tb)} />}
     </div>
+  );
+}
+
+// --- Tab 4: Balance sheet (Mizania) — clickable lines --------------------------
+interface BSData {
+  asOf: string;
+  assets: { cash: number; materialStock: number; productStock: number; receivables: number; total: number };
+  liabilities: { payables: number; loansOutstanding: number; creditors: { name: string; info: string | null; outstanding: number }[]; total: number };
+  equity: { capital: number; retainedProfit: number; total: number };
+}
+
+function BalanceSheetTab({ goTo }: { goTo: (tab: Tab) => void }) {
+  const { t } = useI18n();
+  const [data, setData] = useState<BSData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    api.get<BSData>("/api/accounting/balance-sheet").then(setData)
+      .catch((e) => setError(e instanceof Error ? e.message : "Failed"));
+  }, []);
+
+  if (error) return <p className="text-sm text-red-600">{error}</p>;
+  if (!data) return <p className="text-sm text-slate-400">{t("common.loading")}</p>;
+
+  const row = (label: string, value: number, onClick?: () => void, href?: string) => (
+    <tr className={onClick || href ? "hover:bg-emerald-50 cursor-pointer" : ""}
+      onClick={onClick ?? (href ? () => { window.location.href = href; } : undefined)}>
+      <td className="py-2 text-slate-600">{(onClick || href) ? <span className="underline decoration-dotted">{label}</span> : label}</td>
+      <td className="py-2 text-right text-slate-800">{formatTZS(value)}</td>
+    </tr>
+  );
+
+  return (
+    <>
+      <p className="text-sm text-slate-500">{t("bs.asOf")}: {new Date(data.asOf).toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Assets */}
+        <Card className="p-4">
+          <div className="font-semibold text-emerald-700 mb-2">💰 {t("bs.assets")}</div>
+          <table className="w-full text-sm">
+            <tbody className="divide-y divide-slate-100">
+              {row(t("bs.cash"), data.assets.cash, () => goTo("ledger"))}
+              {row(t("bs.materialStock"), data.assets.materialStock, undefined, "/inventory")}
+              {row(t("bs.productStock"), data.assets.productStock, undefined, "/products")}
+              {row(t("bs.receivables"), data.assets.receivables, () => goTo("payments"))}
+              <tr className="font-semibold text-slate-900 border-t-2 border-slate-300">
+                <td className="py-2">{t("bs.totalAssets")}</td>
+                <td className="py-2 text-right">{formatTZS(data.assets.total)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </Card>
+
+        {/* Liabilities + Equity */}
+        <Card className="p-4">
+          <div className="font-semibold text-red-700 mb-2">📉 {t("bs.liabilities")}</div>
+          <table className="w-full text-sm">
+            <tbody className="divide-y divide-slate-100">
+              {row(t("bs.payables"), data.liabilities.payables, () => goTo("payments"))}
+              {row(t("bs.loans"), data.liabilities.loansOutstanding, () => goTo("capital"))}
+              {data.liabilities.creditors.map((c) => (
+                <tr key={c.name} className="text-xs text-slate-500 cursor-pointer hover:bg-emerald-50" onClick={() => goTo("capital")}>
+                  <td className="py-1 pl-4">↳ {c.name}{c.info ? ` (${c.info})` : ""}</td>
+                  <td className="py-1 text-right">{formatTZS(c.outstanding)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="font-semibold text-blue-700 mt-4 mb-2">🏛 {t("bs.equity")}</div>
+          <table className="w-full text-sm">
+            <tbody className="divide-y divide-slate-100">
+              {row(t("bs.capital"), data.equity.capital, () => goTo("capital"))}
+              {row(t("bs.retained"), data.equity.retainedProfit, undefined, "/reports")}
+              <tr className="font-semibold text-slate-900 border-t-2 border-slate-300">
+                <td className="py-2">{t("bs.totalLiabEquity")}</td>
+                <td className="py-2 text-right">{formatTZS(data.liabilities.total + data.equity.total)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </Card>
+      </div>
+    </>
   );
 }
 
@@ -163,9 +248,11 @@ function PaymentsTab({ canWrite }: { canWrite: boolean }) {
 
 // --- Tab 2: Capital / Loans / Drawings ----------------------------------------
 type CapType = "CAPITAL" | "LOAN" | "LOAN_REPAYMENT" | "DRAWING";
-interface CapEntry { id: string; type: CapType; amount: string | number; description: string | null; entryDate: string }
+interface CapEntry { id: string; type: CapType; amount: string | number; partyName: string | null; partyInfo: string | null; description: string | null; entryDate: string }
+interface Creditor { name: string; info: string | null; outstanding: number }
 interface CapData {
   entries: CapEntry[];
+  creditors: Creditor[];
   summary: { capitalIn: number; drawings: number; capital: number; loansIn: number; loanRepayments: number; loansOutstanding: number };
 }
 const capColor: Record<CapType, "emerald" | "blue" | "amber" | "red"> = {
@@ -179,6 +266,8 @@ function CapitalTab({ canWrite }: { canWrite: boolean }) {
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<CapType>("CAPITAL");
   const [amount, setAmount] = useState("");
+  const [partyName, setPartyName] = useState("");
+  const [partyInfo, setPartyInfo] = useState("");
   const [description, setDescription] = useState("");
   const [entryDate, setEntryDate] = useState(new Date().toISOString().slice(0, 10));
   const [saving, setSaving] = useState(false);
@@ -193,8 +282,12 @@ function CapitalTab({ canWrite }: { canWrite: boolean }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await api.post("/api/capital", { type, amount: Number(amount), description: description || null, entryDate });
-      setOpen(false); setAmount(""); setDescription("");
+      await api.post("/api/capital", {
+        type, amount: Number(amount),
+        partyName: partyName || null, partyInfo: partyInfo || null,
+        description: description || null, entryDate,
+      });
+      setOpen(false); setAmount(""); setPartyName(""); setPartyInfo(""); setDescription("");
       await load();
     } catch (err) { alert(err instanceof Error ? err.message : "Failed"); }
     finally { setSaving(false); }
@@ -230,6 +323,29 @@ function CapitalTab({ canWrite }: { canWrite: boolean }) {
         </Card>
       </div>
 
+      {/* Creditors — everyone we owe, by name */}
+      {data && data.creditors.length > 0 && (
+        <Card className="p-4 border-blue-200">
+          <div className="font-semibold text-slate-800 mb-2">🤝 {t("capital.creditors")}</div>
+          <table className="w-full text-sm">
+            <thead className="text-slate-500 text-left"><tr>
+              <th className="py-1">{t("capital.partyName")}</th>
+              <th className="py-1">{t("capital.partyInfo")}</th>
+              <th className="py-1 text-right">{t("accounting.balance")}</th>
+            </tr></thead>
+            <tbody className="divide-y divide-slate-100">
+              {data.creditors.map((c) => (
+                <tr key={c.name}>
+                  <td className="py-2 font-medium text-slate-800">{c.name}</td>
+                  <td className="py-2 text-slate-600">{c.info ?? "—"}</td>
+                  <td className="py-2 text-right text-blue-700 font-medium"><Money value={c.outstanding} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
+
       {canWrite && (
         <div className="flex justify-end">
           <button onClick={() => setOpen(true)} className={btnPrimary}>+ {t("capital.new")}</button>
@@ -242,18 +358,20 @@ function CapitalTab({ canWrite }: { canWrite: boolean }) {
             <tr>
               <th className="px-4 py-3 font-medium">{t("ledger.date")}</th>
               <th className="px-4 py-3 font-medium">{t("capital.type")}</th>
+              <th className="px-4 py-3 font-medium">{t("capital.partyName")}</th>
               <th className="px-4 py-3 font-medium">{t("ledger.description")}</th>
               <th className="px-4 py-3 font-medium text-right">{t("accounting.amount")}</th>
               {canWrite && <th className="px-4 py-3 font-medium text-right">{t("common.actions")}</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {!data ? <EmptyRow colSpan={5} text={t("common.loading")} />
-              : data.entries.length === 0 ? <EmptyRow colSpan={5} text={t("common.noData")} />
+            {!data ? <EmptyRow colSpan={6} text={t("common.loading")} />
+              : data.entries.length === 0 ? <EmptyRow colSpan={6} text={t("common.noData")} />
               : data.entries.map((x) => (
                 <tr key={x.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3 text-slate-500">{new Date(x.entryDate).toLocaleDateString()}</td>
                   <td className="px-4 py-3"><Badge color={capColor[x.type]}>{t(`capital.${x.type}` as TranslationKey)}</Badge></td>
+                  <td className="px-4 py-3 text-slate-700">{x.partyName ?? "—"}{x.partyInfo && <span className="text-xs text-slate-400"> · {x.partyInfo}</span>}</td>
                   <td className="px-4 py-3 text-slate-600">{x.description ?? "—"}</td>
                   <td className="px-4 py-3 text-right text-slate-800"><Money value={x.amount} /></td>
                   {canWrite && (
@@ -285,6 +403,20 @@ function CapitalTab({ canWrite }: { canWrite: boolean }) {
                 <input type="date" value={entryDate} onChange={(e) => setEntryDate(e.target.value)} className={inputClass} />
               </Field>
             </div>
+            <Field label={t("capital.partyName")}>
+              <input
+                value={partyName}
+                onChange={(e) => setPartyName(e.target.value)}
+                className={inputClass}
+                required={type === "LOAN" || type === "LOAN_REPAYMENT"}
+              />
+              {(type === "LOAN" || type === "LOAN_REPAYMENT") && (
+                <p className="text-xs text-slate-400 mt-1">{t("capital.partyRequired")}</p>
+              )}
+            </Field>
+            <Field label={`${t("capital.partyInfo")} (${t("common.optional")})`}>
+              <input value={partyInfo} onChange={(e) => setPartyInfo(e.target.value)} className={inputClass} placeholder="07xx…, mtaa…" />
+            </Field>
             <Field label={`${t("ledger.description")} (${t("common.optional")})`}>
               <input value={description} onChange={(e) => setDescription(e.target.value)} className={inputClass} />
             </Field>

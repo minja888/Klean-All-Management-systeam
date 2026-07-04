@@ -319,6 +319,12 @@ export const dictionary = {
   "dash.stockValue": { en: "Stock value", sw: "Thamani ya bidhaa" },
   "dash.production": { en: "Production (month)", sw: "Uzalishaji (mwezi)" },
   "dash.lowStockAlerts": { en: "Low-stock alerts", sw: "Tahadhari za bidhaa" },
+  "dash.notifications": { en: "Approvals needed", sw: "Maombi yanayosubiri idhini" },
+  "dash.newRegistration": { en: "New registration", sw: "Usajili mpya" },
+  "dash.resetRequest": { en: "Password reset request", sw: "Ombi la kubadilishiwa password" },
+  "dash.approveNow": { en: "Approve", sw: "Idhinisha" },
+  "dash.openUsers": { en: "Open Users", sw: "Fungua Watumiaji" },
+  "dash.approved": { en: "Approved!", sw: "Imeidhinishwa!" },
 
   // Accounting
   "accounting.title": { en: "Accounting", sw: "Uhasibu" },

@@ -7,11 +7,13 @@ import { requireUser } from "@/lib/rbac";
 import { canView } from "@/lib/access";
 import { toNumber } from "@/lib/money";
 import { computeProfit, periodBounds } from "@/lib/profit";
+import { Role } from "@/generated/prisma/enums";
 
 export const GET = handle(async () => {
   const session = await getSession();
   const user = requireUser(session);
   const showFinancials = canView(user.role, "profit_dashboard");
+  const isAdmin = user.role === Role.ADMIN;
 
   const { now, monthStart, yearStart } = periodBounds();
 
@@ -25,12 +27,32 @@ export const GET = handle(async () => {
     where: { status: "COMPLETED", completedAt: { gte: monthStart } },
   });
 
+  // Admin notifications: pending registrations + recent password-reset requests.
+  let pendingUsers: { id: string; name: string; email: string; position: string | null; createdAt: Date }[] = [];
+  let resetRequests: { id: string; userName: string; userEmail: string; createdAt: Date }[] = [];
+  if (isAdmin) {
+    pendingUsers = await prisma.user.findMany({
+      where: { isActive: false },
+      select: { id: true, name: true, email: true, position: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+    });
+    resetRequests = await prisma.auditLog.findMany({
+      where: { entity: "PasswordResetRequest", createdAt: { gte: new Date(Date.now() - 7 * 24 * 3600 * 1000) } },
+      select: { id: true, userName: true, userEmail: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    });
+  }
+
   const base = {
     lowStockCount: lowStock.length,
     lowStock: lowStock.slice(0, 8).map((m) => ({ name: m.name, currentStock: m.currentStock, reorderLevel: m.reorderLevel, stockUnit: m.stockUnit })),
     productionOutput: producedAgg._sum.quantityProduced ?? 0,
     stockValue,
     showFinancials,
+    isAdmin,
+    pendingUsers,
+    resetRequests,
   };
 
   if (!showFinancials) return ok(base);

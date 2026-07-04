@@ -48,6 +48,18 @@ export default function ReportsPage() {
       <PageTips tipKey="tips.reports" />
 
       <Card className="p-4">
+        <div className="flex flex-wrap items-end gap-2 mb-3">
+          <button onClick={() => { setFrom(today()); setTo(today()); }} className={btnSecondary}>{t("period.today")}</button>
+          <button onClick={() => {
+            const now = new Date(); const day = (now.getDay() + 6) % 7;
+            const monday = new Date(now); monday.setDate(now.getDate() - day);
+            setFrom(monday.toISOString().slice(0, 10)); setTo(today());
+          }} className={btnSecondary}>{t("period.thisWeek")}</button>
+          <button onClick={() => { setFrom(firstOfMonth()); setTo(today()); }} className={btnSecondary}>{t("period.thisMonth")}</button>
+          <button onClick={() => {
+            setFrom(new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10)); setTo(today());
+          }} className={btnSecondary}>{t("period.thisYear")}</button>
+        </div>
         <div className="flex flex-wrap items-end gap-3">
           <Field label={t("reports.from")}><input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className={inputClass} /></Field>
           <Field label={t("reports.to")}><input type="date" value={to} onChange={(e) => setTo(e.target.value)} className={inputClass} /></Field>

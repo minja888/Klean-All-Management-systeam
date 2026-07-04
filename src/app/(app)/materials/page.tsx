@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useI18n } from "@/components/i18n-provider";
-import { useCanWrite } from "@/components/session-provider";
+import { useSession, useCanWrite } from "@/components/session-provider";
 import { api } from "@/lib/client";
 import { PageHeader, Modal, Field, inputClass, btnPrimary, btnSecondary, Money, EmptyRow } from "@/components/ui";
 
@@ -37,13 +37,19 @@ interface FormState {
 }
 
 const empty: FormState = {
-  name: "", categoryId: "", purchaseUnit: "roll", stockUnit: "metre",
+  name: "", categoryId: "", purchaseUnit: "kilo", stockUnit: "kilo",
   conversionFactor: "1", reorderLevel: "0", costPrice: "0", currentStock: "0", departmentId: "",
 };
 
+// Common package/unit suggestions shown in the unit inputs (fully customizable).
+const UNIT_SUGGESTIONS = ["kilo", "gram", "roll", "metre", "bag", "carton", "box", "piece", "litre", "dozen"];
+
 export default function MaterialsPage() {
   const { t } = useI18n();
-  const canWrite = useCanWrite("materials_inventory");
+  const { role } = useSession();
+  const canWrite = useCanWrite("materials_inventory"); // ADMIN + WORKER (own dept)
+  const isAdmin = role === "ADMIN";
+  const isWorker = role === "WORKER";
 
   const [materials, setMaterials] = useState<Material[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -55,21 +61,28 @@ export default function MaterialsPage() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
+  // Stock movement modal
+  const [moveFor, setMoveFor] = useState<Material | null>(null);
+  const [moveType, setMoveType] = useState<"IN" | "OUT">("IN");
+  const [moveQty, setMoveQty] = useState("1");
+  const [moveNote, setMoveNote] = useState("");
+  const [moveError, setMoveError] = useState<string | null>(null);
+  const [moving, setMoving] = useState(false);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
       setMaterials(await api.get<Material[]>("/api/materials"));
       if (canWrite) {
-        // Only ADMIN can write; the category/department pickers are ADMIN-only endpoints.
         setCategories(await api.get<Category[]>("/api/settings/material-categories"));
-        setDepartments(await api.get<Department[]>("/api/departments"));
+        if (isAdmin) setDepartments(await api.get<Department[]>("/api/departments"));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load");
     } finally {
       setLoading(false);
     }
-  }, [canWrite]);
+  }, [canWrite, isAdmin]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -109,6 +122,24 @@ export default function MaterialsPage() {
     catch (err) { alert(err instanceof Error ? err.message : "Failed to delete"); }
   }
 
+  function openMove(m: Material) {
+    setMoveError(null); setMoveFor(m); setMoveType("IN"); setMoveQty("1"); setMoveNote("");
+  }
+  async function saveMove(e: React.FormEvent) {
+    e.preventDefault();
+    if (!moveFor) return;
+    setMoving(true); setMoveError(null);
+    try {
+      await api.post(`/api/materials/${moveFor.id}/movements`, {
+        type: moveType, quantity: Number(moveQty), note: moveNote || null,
+      });
+      setMoveFor(null); await load();
+    } catch (err) { setMoveError(err instanceof Error ? err.message : "Failed"); }
+    finally { setMoving(false); }
+  }
+
+  const colCount = 5 + (isWorker ? 0 : 1) + (canWrite ? 1 : 0);
+
   return (
     <div className="space-y-4">
       <PageHeader
@@ -126,13 +157,13 @@ export default function MaterialsPage() {
               <th className="px-4 py-3 font-medium">{t("materials.stockUnit")}</th>
               <th className="px-4 py-3 font-medium text-right">{t("materials.currentStock")}</th>
               <th className="px-4 py-3 font-medium text-right">{t("materials.reorderLevel")}</th>
-              <th className="px-4 py-3 font-medium text-right">{t("materials.costPrice")}</th>
+              {!isWorker && <th className="px-4 py-3 font-medium text-right">{t("materials.costPrice")}</th>}
               {canWrite && <th className="px-4 py-3 font-medium text-right">{t("common.actions")}</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {loading ? <EmptyRow colSpan={canWrite ? 7 : 6} text={t("common.loading")} />
-              : materials.length === 0 ? <EmptyRow colSpan={canWrite ? 7 : 6} text={t("common.noData")} />
+            {loading ? <EmptyRow colSpan={colCount} text={t("common.loading")} />
+              : materials.length === 0 ? <EmptyRow colSpan={colCount} text={t("common.noData")} />
               : materials.map((m) => (
                 <tr key={m.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3 font-medium text-slate-800">{m.name}</td>
@@ -140,11 +171,12 @@ export default function MaterialsPage() {
                   <td className="px-4 py-3 text-slate-600">{m.stockUnit}</td>
                   <td className="px-4 py-3 text-right text-slate-700">{m.currentStock}</td>
                   <td className="px-4 py-3 text-right text-slate-500">{m.reorderLevel}</td>
-                  <td className="px-4 py-3 text-right text-slate-700"><Money value={m.costPrice} /></td>
+                  {!isWorker && <td className="px-4 py-3 text-right text-slate-700"><Money value={m.costPrice} /></td>}
                   {canWrite && (
                     <td className="px-4 py-3 text-right space-x-3 whitespace-nowrap">
+                      <button onClick={() => openMove(m)} className="text-blue-600 hover:underline">{t("materials.record")}</button>
                       <button onClick={() => openEdit(m)} className="text-emerald-700 hover:underline">{t("action.edit")}</button>
-                      <button onClick={() => remove(m)} className="text-red-600 hover:underline">{t("action.delete")}</button>
+                      {isAdmin && <button onClick={() => remove(m)} className="text-red-600 hover:underline">{t("action.delete")}</button>}
                     </td>
                   )}
                 </tr>
@@ -152,6 +184,11 @@ export default function MaterialsPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Unit suggestions shared by both unit inputs */}
+      <datalist id="unit-suggestions">
+        {UNIT_SUGGESTIONS.map((u) => <option key={u} value={u} />)}
+      </datalist>
 
       {form && (
         <Modal title={form.id ? t("action.edit") : t("materials.new")} onClose={() => setForm(null)}>
@@ -167,38 +204,74 @@ export default function MaterialsPage() {
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label={t("materials.purchaseUnit")}>
-                <input required value={form.purchaseUnit} onChange={(e) => setForm({ ...form, purchaseUnit: e.target.value })} className={inputClass} />
+                <input required list="unit-suggestions" value={form.purchaseUnit} onChange={(e) => setForm({ ...form, purchaseUnit: e.target.value })} className={inputClass} />
               </Field>
               <Field label={t("materials.stockUnit")}>
-                <input required value={form.stockUnit} onChange={(e) => setForm({ ...form, stockUnit: e.target.value })} className={inputClass} />
+                <input required list="unit-suggestions" value={form.stockUnit} onChange={(e) => setForm({ ...form, stockUnit: e.target.value })} className={inputClass} />
               </Field>
             </div>
+            <p className="text-xs text-slate-400 -mt-2">{t("materials.unitHint")}</p>
             <Field label={t("materials.conversionFactor")}>
               <input type="number" step="any" min="0.0001" required value={form.conversionFactor}
                 onChange={(e) => setForm({ ...form, conversionFactor: e.target.value })} className={inputClass} />
               <p className="text-xs text-slate-400 mt-1">{t("materials.conversionHint")}</p>
             </Field>
-            <div className="grid grid-cols-3 gap-3">
+            <div className={"grid gap-3 " + (isAdmin ? "grid-cols-3" : "grid-cols-2")}>
               <Field label={t("materials.reorderLevel")}>
                 <input type="number" step="any" min="0" value={form.reorderLevel} onChange={(e) => setForm({ ...form, reorderLevel: e.target.value })} className={inputClass} />
               </Field>
-              <Field label={t("materials.costPrice")}>
-                <input type="number" step="any" min="0" value={form.costPrice} onChange={(e) => setForm({ ...form, costPrice: e.target.value })} className={inputClass} />
-              </Field>
+              {isAdmin && (
+                <Field label={t("materials.costPrice")}>
+                  <input type="number" step="any" min="0" value={form.costPrice} onChange={(e) => setForm({ ...form, costPrice: e.target.value })} className={inputClass} />
+                </Field>
+              )}
               <Field label={t("materials.currentStock")}>
                 <input type="number" step="any" min="0" value={form.currentStock} onChange={(e) => setForm({ ...form, currentStock: e.target.value })} className={inputClass} />
               </Field>
             </div>
-            <Field label={`${t("users.department")} (${t("common.optional")})`}>
-              <select value={form.departmentId} onChange={(e) => setForm({ ...form, departmentId: e.target.value })} className={inputClass}>
-                <option value="">—</option>
-                {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-              </select>
-            </Field>
+            {!isAdmin && <p className="text-xs text-slate-400">{t("materials.priceAdminOnly")}</p>}
+            {isAdmin && (
+              <Field label={`${t("users.department")} (${t("common.optional")})`}>
+                <select value={form.departmentId} onChange={(e) => setForm({ ...form, departmentId: e.target.value })} className={inputClass}>
+                  <option value="">—</option>
+                  {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+              </Field>
+            )}
             {formError && <p className="text-sm text-red-600">{formError}</p>}
             <div className="flex justify-end gap-2 pt-2">
               <button type="button" onClick={() => setForm(null)} className={btnSecondary}>{t("action.cancel")}</button>
               <button type="submit" disabled={saving} className={btnPrimary}>{saving ? t("common.loading") : t("action.save")}</button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Record stock movement (IN / OUT) */}
+      {moveFor && (
+        <Modal title={`${t("materials.recordTitle")} — ${moveFor.name}`} onClose={() => setMoveFor(null)}>
+          <form onSubmit={saveMove} className="space-y-4">
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => setMoveType("IN")}
+                className={"rounded-md border px-3 py-2 text-sm font-medium " + (moveType === "IN" ? "border-emerald-600 bg-emerald-50 text-emerald-700" : "border-slate-300 text-slate-600")}>
+                ⬇ {t("materials.stockIn")}
+              </button>
+              <button type="button" onClick={() => setMoveType("OUT")}
+                className={"rounded-md border px-3 py-2 text-sm font-medium " + (moveType === "OUT" ? "border-red-500 bg-red-50 text-red-700" : "border-slate-300 text-slate-600")}>
+                ⬆ {t("materials.stockOut")}
+              </button>
+            </div>
+            <Field label={`${t("materials.quantity")} (${moveFor.stockUnit})`}>
+              <input type="number" step="any" min="0.0001" required value={moveQty} onChange={(e) => setMoveQty(e.target.value)} className={inputClass} />
+            </Field>
+            <Field label={`${t("materials.note")} (${t("common.optional")})`}>
+              <input value={moveNote} onChange={(e) => setMoveNote(e.target.value)} className={inputClass} />
+            </Field>
+            <p className="text-xs text-slate-400">{t("materials.currentStock")}: {moveFor.currentStock} {moveFor.stockUnit}</p>
+            {moveError && <p className="text-sm text-red-600">{moveError}</p>}
+            <div className="flex justify-end gap-2 pt-2">
+              <button type="button" onClick={() => setMoveFor(null)} className={btnSecondary}>{t("action.cancel")}</button>
+              <button type="submit" disabled={moving} className={btnPrimary}>{moving ? t("common.loading") : t("action.save")}</button>
             </div>
           </form>
         </Modal>

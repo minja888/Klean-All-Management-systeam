@@ -117,6 +117,14 @@ export const dictionary = {
   "materials.costPrice": { en: "Cost price", sw: "Bei ya gharama" },
   "materials.currentStock": { en: "Current stock", sw: "Bidhaa iliyopo" },
   "materials.conversionHint": { en: "Stock units per 1 purchase unit (e.g. metres per roll).", sw: "Vipimo vya hifadhi kwa kipimo 1 cha kununua." },
+  "materials.record": { en: "Record", sw: "Rekodi" },
+  "materials.recordTitle": { en: "Record stock movement", sw: "Rekodi mzunguko wa bidhaa" },
+  "materials.stockIn": { en: "Stock in (received)", sw: "Imeingia (imepokelewa)" },
+  "materials.stockOut": { en: "Stock out (used)", sw: "Imetumika (imetoka)" },
+  "materials.quantity": { en: "Quantity", sw: "Kiasi" },
+  "materials.note": { en: "Note", sw: "Maelezo" },
+  "materials.priceAdminOnly": { en: "Price is set by the Admin.", sw: "Bei inawekwa na Admin tu." },
+  "materials.unitHint": { en: "e.g. kilo, roll, bag, carton, metre, piece", sw: "mfano: kilo, roli, mfuko, katoni, mita, kipande" },
 
   // Inventory
   "inventory.title": { en: "Inventory", sw: "Bohari" },

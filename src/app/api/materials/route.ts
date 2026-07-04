@@ -1,11 +1,11 @@
 // /api/materials — list & create raw materials
 // View: ADMIN/MANAGER/ACCOUNTING (all), WORKER (own department only).
-// Write: ADMIN only.
+// Write: ADMIN (full) + WORKER (own department; cannot set price).
 import { z } from "zod";
-import { handle, ok } from "@/lib/api";
+import { handle, ok, ApiError } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { requireView, requireRole } from "@/lib/rbac";
+import { requireView, requireWrite } from "@/lib/rbac";
 import { writeAudit } from "@/lib/audit";
 import { Role } from "@/generated/prisma/enums";
 
@@ -34,8 +34,14 @@ export const GET = handle(async () => {
 
 export const POST = handle(async (req) => {
   const session = await getSession();
-  const actor = requireRole(session, [Role.ADMIN]);
+  const actor = requireWrite(session, "materials_inventory");
   const input = createSchema.parse(await req.json().catch(() => ({})));
+
+  // WORKER: locked to own department; may NOT set a price (Admin only).
+  const isWorker = actor.role === Role.WORKER;
+  if (isWorker && !actor.departmentId) {
+    throw new ApiError("Your account is not assigned to a department.", 403);
+  }
 
   const material = await prisma.material.create({
     data: {
@@ -45,9 +51,9 @@ export const POST = handle(async (req) => {
       stockUnit: input.stockUnit,
       conversionFactor: input.conversionFactor,
       reorderLevel: input.reorderLevel,
-      costPrice: input.costPrice,
+      costPrice: isWorker ? 0 : input.costPrice,
       currentStock: input.currentStock ?? 0,
-      departmentId: input.departmentId ?? null,
+      departmentId: isWorker ? actor.departmentId : (input.departmentId ?? null),
     },
     include: materialInclude,
   });

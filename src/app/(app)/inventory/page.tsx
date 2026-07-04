@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useI18n } from "@/components/i18n-provider";
+import { useSession } from "@/components/session-provider";
 import { api } from "@/lib/client";
 import { PageHeader, Card, Money, Badge, EmptyRow } from "@/components/ui";
 
@@ -24,6 +25,8 @@ interface InventoryResponse {
 
 export default function InventoryPage() {
   const { t } = useI18n();
+  const { role } = useSession();
+  const showValue = role !== "WORKER"; // prices/values are hidden from workers
   const [data, setData] = useState<InventoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,10 +44,12 @@ export default function InventoryPage() {
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="p-4">
-          <div className="text-sm text-slate-500">{t("inventory.totalValue")}</div>
-          <div className="mt-1 text-2xl font-semibold text-slate-800"><Money value={data?.totalValue ?? 0} /></div>
-        </Card>
+        {showValue && (
+          <Card className="p-4">
+            <div className="text-sm text-slate-500">{t("inventory.totalValue")}</div>
+            <div className="mt-1 text-2xl font-semibold text-slate-800"><Money value={data?.totalValue ?? 0} /></div>
+          </Card>
+        )}
         <Card className="p-4">
           <div className="text-sm text-slate-500">{t("inventory.lowStockItems")}</div>
           <div className="mt-1 text-2xl font-semibold text-amber-600">{data?.lowStockCount ?? 0}</div>
@@ -59,12 +64,12 @@ export default function InventoryPage() {
               <th className="px-4 py-3 font-medium">{t("materials.category")}</th>
               <th className="px-4 py-3 font-medium text-right">{t("inventory.level")}</th>
               <th className="px-4 py-3 font-medium text-right">{t("materials.reorderLevel")}</th>
-              <th className="px-4 py-3 font-medium text-right">{t("inventory.value")}</th>
+              {showValue && <th className="px-4 py-3 font-medium text-right">{t("inventory.value")}</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {loading ? <EmptyRow colSpan={5} text={t("common.loading")} />
-              : !data || data.items.length === 0 ? <EmptyRow colSpan={5} text={t("common.noData")} />
+            {loading ? <EmptyRow colSpan={showValue ? 5 : 4} text={t("common.loading")} />
+              : !data || data.items.length === 0 ? <EmptyRow colSpan={showValue ? 5 : 4} text={t("common.noData")} />
               : data.items.map((i) => (
                 <tr key={i.id} className={i.lowStock ? "bg-amber-50" : "hover:bg-slate-50"}>
                   <td className="px-4 py-3 font-medium text-slate-800">
@@ -74,7 +79,7 @@ export default function InventoryPage() {
                   <td className="px-4 py-3 text-slate-600">{i.category}</td>
                   <td className="px-4 py-3 text-right text-slate-700">{i.currentStock} {i.stockUnit}</td>
                   <td className="px-4 py-3 text-right text-slate-500">{i.reorderLevel}</td>
-                  <td className="px-4 py-3 text-right text-slate-700"><Money value={i.value} /></td>
+                  {showValue && <td className="px-4 py-3 text-right text-slate-700"><Money value={i.value} /></td>}
                 </tr>
               ))}
           </tbody>

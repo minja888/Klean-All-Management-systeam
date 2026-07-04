@@ -3,7 +3,7 @@ import { z } from "zod";
 import { handle, ok, NotFound, ApiError } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { requireView, requireRole } from "@/lib/rbac";
+import { requireView, requireRole, requireWrite, enforceDepartment } from "@/lib/rbac";
 import { writeAudit } from "@/lib/audit";
 import { Role } from "@/generated/prisma/enums";
 
@@ -32,11 +32,15 @@ export const GET = handle(async (_req, ctx) => {
 
 export const PUT = handle(async (req, ctx) => {
   const session = await getSession();
-  const actor = requireRole(session, [Role.ADMIN]);
+  const actor = requireWrite(session, "materials_inventory");
   const { id } = await ctx.params;
 
   const before = await prisma.material.findUnique({ where: { id }, include: materialInclude });
   if (!before) throw NotFound("Material not found");
+
+  // WORKER: only materials in own department; price + department stay Admin-only.
+  const isWorker = actor.role === Role.WORKER;
+  if (isWorker) enforceDepartment(actor, "materials_inventory", before.departmentId);
 
   const input = updateSchema.parse(await req.json().catch(() => ({})));
   const material = await prisma.material.update({
@@ -48,9 +52,9 @@ export const PUT = handle(async (req, ctx) => {
       stockUnit: input.stockUnit,
       conversionFactor: input.conversionFactor,
       reorderLevel: input.reorderLevel,
-      costPrice: input.costPrice,
+      costPrice: isWorker ? undefined : input.costPrice,
       currentStock: input.currentStock,
-      departmentId: input.departmentId === undefined ? undefined : input.departmentId,
+      departmentId: isWorker ? undefined : (input.departmentId === undefined ? undefined : input.departmentId),
     },
     include: materialInclude,
   });

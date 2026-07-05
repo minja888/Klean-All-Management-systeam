@@ -58,7 +58,7 @@ export default function CustomersPage() {
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-500 text-left">
+          <thead className="bg-[var(--brand-50)] text-emerald-900/70 text-left">
             <tr>
               <th className="px-4 py-3 font-medium">{t("customers.name")}</th>
               <th className="px-4 py-3 font-medium">{t("customers.phone")}</th>

@@ -28,9 +28,9 @@ interface Dashboard {
 
 function Kpi({ label, children, accent }: { label: string; children: React.ReactNode; accent?: string }) {
   return (
-    <Card className="p-4">
+    <Card className="p-4 pad-stripe pl-5 overflow-hidden">
       <div className="text-sm text-slate-500">{label}</div>
-      <div className={"mt-1 text-2xl font-semibold " + (accent ?? "text-slate-800")}>{children}</div>
+      <div className={"mt-1 font-display text-2xl font-semibold tabular " + (accent ?? "text-slate-800")}>{children}</div>
     </Card>
   );
 }

@@ -6,16 +6,16 @@
 import { formatTZS } from "@/lib/money";
 
 export const inputClass =
-  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none";
+  "w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none";
 export const btnPrimary =
-  "rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60";
+  "rounded-lg bg-[var(--brand-700)] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[var(--brand-900)] active:translate-y-px transition disabled:opacity-60";
 export const btnSecondary =
-  "rounded-md border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50";
+  "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm text-slate-600 hover:border-emerald-400 hover:text-emerald-800 transition";
 
 export function PageHeader({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between">
-      <h1 className="text-2xl font-semibold text-slate-800">{title}</h1>
+    <div className="flex items-center justify-between gap-3">
+      <h1 className="pad-stripe pl-3 font-display text-2xl font-semibold text-slate-800">{title}</h1>
       {action}
     </div>
   );
@@ -47,7 +47,7 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
 }
 
 export function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={"bg-white rounded-xl border border-slate-200 " + className}>{children}</div>;
+  return <div className={"bg-white rounded-xl border border-slate-200 shadow-[0_1px_2px_rgb(16_44_28/0.05)] " + className}>{children}</div>;
 }
 
 export function Money({ value }: { value: number | string | null | undefined }) {

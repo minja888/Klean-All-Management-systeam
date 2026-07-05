@@ -39,17 +39,20 @@ function LoginPortal() {
       <div className="w-full max-w-md">
         <div className="flex justify-end mb-3"><LanguageToggle /></div>
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-          <h1 className="text-2xl font-bold text-emerald-700 text-center">Klean All</h1>
+          <div className="flex items-center justify-center gap-2.5">
+            <span className="pad-glyph" aria-hidden />
+            <h1 className="font-display text-2xl font-bold text-[var(--brand-900)]">Klean All</h1>
+          </div>
           <p className="text-sm text-slate-500 text-center mt-1 mb-5">Factory ERP / POS</p>
 
           {/* Tabs */}
           <div className="grid grid-cols-2 gap-1 rounded-lg bg-slate-100 p-1 mb-6">
             <button onClick={() => setTab("login")}
-              className={"rounded-md py-2 text-sm font-medium " + (tab === "login" ? "bg-white shadow text-emerald-700" : "text-slate-500")}>
+              className={"rounded-md py-2 text-sm font-medium border-b-2 " + (tab === "login" ? "bg-white shadow text-emerald-800 border-[var(--sponge-400)]" : "text-slate-500 border-transparent")}>
               {t("auth.loginTab")}
             </button>
             <button onClick={() => setTab("register")}
-              className={"rounded-md py-2 text-sm font-medium " + (tab === "register" ? "bg-white shadow text-emerald-700" : "text-slate-500")}>
+              className={"rounded-md py-2 text-sm font-medium border-b-2 " + (tab === "register" ? "bg-white shadow text-emerald-800 border-[var(--sponge-400)]" : "text-slate-500 border-transparent")}>
               {t("auth.registerTab")}
             </button>
           </div>

@@ -247,7 +247,7 @@ function CrudList({
 
       <div className="border border-slate-200 rounded-lg overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-500 text-left">
+          <thead className="bg-[var(--brand-50)] text-emerald-900/70 text-left">
             <tr>
               <th className="px-4 py-2 font-medium">{t("settings.categoryName")}</th>
               {withDescription && <th className="px-4 py-2 font-medium">{t("settings.description")}</th>}

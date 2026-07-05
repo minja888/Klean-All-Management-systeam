@@ -418,6 +418,14 @@ export const dictionary = {
   "matreport.clickHint": { en: "Click a material name to see its full history.", sw: "Bonyeza jina la malighafi kuona historia yake yote." },
   "matreport.by": { en: "By", sw: "Na" },
 
+  // Report charts
+  "charts.trend": { en: "6-month trend", sw: "Mwenendo wa miezi 6" },
+  "charts.revenue": { en: "Revenue", sw: "Mapato" },
+  "charts.costs": { en: "All costs", sw: "Gharama zote" },
+  "charts.net": { en: "Net profit", sw: "Faida halisi" },
+  "charts.byCategory": { en: "Expenses by category (period)", sw: "Matumizi kwa aina (kipindi)" },
+  "charts.noData": { en: "No data for charts yet — record sales and expenses first.", sw: "Bado hakuna data ya chati — rekodi mauzo na matumizi kwanza." },
+
   // Reports
   "reports.title": { en: "Reports", sw: "Ripoti" },
   "reports.from": { en: "From", sw: "Kutoka" },

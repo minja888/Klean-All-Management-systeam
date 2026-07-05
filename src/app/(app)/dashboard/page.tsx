@@ -26,13 +26,17 @@ interface Dashboard {
   netProfitYTD?: number;
 }
 
-function Kpi({ label, children, accent }: { label: string; children: React.ReactNode; accent?: string }) {
-  return (
-    <Card className="p-4 pad-stripe pl-5 overflow-hidden">
-      <div className="text-sm text-slate-500">{label}</div>
+function Kpi({ label, children, accent, href }: { label: string; children: React.ReactNode; accent?: string; href?: string }) {
+  const card = (
+    <Card className={"p-4 pad-stripe pl-5 overflow-hidden h-full " + (href ? "transition hover:border-emerald-400 hover:shadow-md cursor-pointer" : "")}>
+      <div className="text-sm text-slate-500 flex items-center justify-between">
+        <span>{label}</span>
+        {href && <span className="text-emerald-500" aria-hidden>›</span>}
+      </div>
       <div className={"mt-1 font-display text-2xl font-semibold tabular " + (accent ?? "text-slate-800")}>{children}</div>
     </Card>
   );
+  return href ? <a href={href} className="block h-full">{card}</a> : card;
 }
 
 export default function DashboardPage() {
@@ -106,27 +110,27 @@ export default function DashboardPage() {
 
       {data?.showFinancials && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Kpi label={t("dash.netProfitMonth")} accent={(data.netProfitMonth ?? 0) >= 0 ? "text-emerald-600" : "text-red-600"}><Money value={data.netProfitMonth ?? 0} /></Kpi>
-          <Kpi label={t("dash.netProfitYTD")} accent={(data.netProfitYTD ?? 0) >= 0 ? "text-emerald-600" : "text-red-600"}><Money value={data.netProfitYTD ?? 0} /></Kpi>
-          <Kpi label={t("dash.salesMonth")}><Money value={data.salesThisMonth ?? 0} /></Kpi>
-          <Kpi label={t("dash.purchasesMonth")}><Money value={data.purchasesThisMonth ?? 0} /></Kpi>
+          <Kpi href="/reports" label={t("dash.netProfitMonth")} accent={(data.netProfitMonth ?? 0) >= 0 ? "text-emerald-600" : "text-red-600"}><Money value={data.netProfitMonth ?? 0} /></Kpi>
+          <Kpi href="/reports" label={t("dash.netProfitYTD")} accent={(data.netProfitYTD ?? 0) >= 0 ? "text-emerald-600" : "text-red-600"}><Money value={data.netProfitYTD ?? 0} /></Kpi>
+          <Kpi href="/sales" label={t("dash.salesMonth")}><Money value={data.salesThisMonth ?? 0} /></Kpi>
+          <Kpi href="/purchases" label={t("dash.purchasesMonth")}><Money value={data.purchasesThisMonth ?? 0} /></Kpi>
         </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {data?.showFinancials && (
           <>
-            <Kpi label={t("dash.supplierCredit")} accent="text-red-600"><Money value={data.supplierCredit ?? 0} /></Kpi>
-            <Kpi label={t("dash.customerDebt")} accent="text-red-600"><Money value={data.customerDebt ?? 0} /></Kpi>
+            <Kpi href="/accounting" label={t("dash.supplierCredit")} accent="text-red-600"><Money value={data.supplierCredit ?? 0} /></Kpi>
+            <Kpi href="/accounting" label={t("dash.customerDebt")} accent="text-red-600"><Money value={data.customerDebt ?? 0} /></Kpi>
           </>
         )}
-        <Kpi label={t("dash.stockValue")}><Money value={data?.stockValue ?? 0} /></Kpi>
-        <Kpi label={t("dash.production")}>{data?.productionOutput ?? 0}</Kpi>
+        <Kpi href="/inventory" label={t("dash.stockValue")}><Money value={data?.stockValue ?? 0} /></Kpi>
+        <Kpi href="/production" label={t("dash.production")}>{data?.productionOutput ?? 0}</Kpi>
       </div>
 
       <Card className="p-4">
         <div className="flex items-center justify-between mb-3">
-          <div className="font-semibold text-slate-800">{t("dash.lowStockAlerts")}</div>
+          <a href="/inventory" className="font-semibold text-slate-800 hover:text-emerald-700 underline decoration-dotted">{t("dash.lowStockAlerts")} ›</a>
           <Badge color={(data?.lowStockCount ?? 0) > 0 ? "amber" : "emerald"}>{data?.lowStockCount ?? 0}</Badge>
         </div>
         {(!data || data.lowStock.length === 0) ? (

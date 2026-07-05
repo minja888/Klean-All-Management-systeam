@@ -5,11 +5,13 @@ import { useI18n } from "@/components/i18n-provider";
 import { PageTips } from "@/components/page-tips";
 import { api } from "@/lib/client";
 import { PageHeader, Card, Field, inputClass, btnPrimary, btnSecondary, Money } from "@/components/ui";
+import { TrendChart, CategoryChart, type MonthPoint } from "@/components/charts";
 
 interface Profit {
   revenue: number; cogs: number; grossProfit: number;
   expenses: number; payroll: number; operatingCost: number; netProfit: number;
 }
+interface Analytics { monthly: MonthPoint[]; byCategory: { name: string; amount: number }[] }
 
 function firstOfMonth() { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10); }
 function today() { return new Date().toISOString().slice(0, 10); }
@@ -22,13 +24,20 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
+
   const generate = useCallback(async () => {
     setLoading(true); setError(null);
-    try { setData(await api.get<Profit>(`/api/reports/profit?from=${from}&to=${to}`)); }
+    try {
+      setData(await api.get<Profit>(`/api/reports/profit?from=${from}&to=${to}`));
+      setAnalytics(await api.get<Analytics>(`/api/reports/analytics?from=${from}&to=${to}`));
+    }
     catch (err) { setError(err instanceof Error ? err.message : "Failed"); }
     finally { setLoading(false); }
   }, [from, to]);
   useEffect(() => { generate(); }, [generate]);
+
+  const hasTrendData = analytics?.monthly.some((m) => m.revenue !== 0 || m.costs !== 0) ?? false;
 
   const rows: { key: string; value: number; strong?: boolean }[] = data ? [
     { key: "reports.revenue", value: data.revenue },
@@ -81,6 +90,29 @@ export default function ReportsPage() {
           </tbody>
         </table>
       </Card>
+
+      {/* Charts — data analysis */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card className="p-4">
+          <div className="font-semibold text-slate-800 mb-2">📊 {t("charts.trend")}</div>
+          {analytics && hasTrendData ? (
+            <TrendChart
+              data={analytics.monthly}
+              labels={{ revenue: t("charts.revenue"), costs: t("charts.costs"), net: t("charts.net") }}
+            />
+          ) : (
+            <p className="text-sm text-slate-400 py-8 text-center">{t("charts.noData")}</p>
+          )}
+        </Card>
+        <Card className="p-4">
+          <div className="font-semibold text-slate-800 mb-3">🧾 {t("charts.byCategory")}</div>
+          {analytics && analytics.byCategory.length > 0 ? (
+            <CategoryChart data={analytics.byCategory} />
+          ) : (
+            <p className="text-sm text-slate-400 py-8 text-center">{t("charts.noData")}</p>
+          )}
+        </Card>
+      </div>
 
       <div className="flex flex-wrap gap-2">
         <a href={exportUrl("sales")} className={btnSecondary}>{t("reports.exportSales")}</a>

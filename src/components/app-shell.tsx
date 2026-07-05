@@ -12,6 +12,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useI18n } from "@/components/i18n-provider";
 import { LanguageToggle } from "@/components/language-toggle";
+import { BrandMark } from "@/components/brand-mark";
 import { api } from "@/lib/client";
 import { canView, type Module } from "@/lib/access";
 import type { TranslationKey } from "@/lib/i18n";
@@ -119,7 +120,7 @@ export function AppShell({
       <aside className="w-60 shrink-0 bg-[var(--brand-950)] flex flex-col">
         <div className="px-4 py-4 border-b border-white/10">
           <div className="flex items-center gap-2">
-            <span className="pad-glyph shrink-0" aria-hidden />
+            <BrandMark size={34} className="shrink-0" />
             <span className="font-display text-lg font-bold text-white truncate">{companyName}</span>
           </div>
           <div className="text-xs text-emerald-200/70 mt-1">{t("app.tagline")}</div>

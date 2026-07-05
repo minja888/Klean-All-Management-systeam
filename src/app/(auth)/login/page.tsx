@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useI18n } from "@/components/i18n-provider";
 import { LanguageToggle } from "@/components/language-toggle";
+import { BrandMark } from "@/components/brand-mark";
 import { api } from "@/lib/client";
 import type { TranslationKey } from "@/lib/i18n";
 
@@ -39,8 +40,8 @@ function LoginPortal() {
       <div className="w-full max-w-md">
         <div className="flex justify-end mb-3"><LanguageToggle /></div>
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-          <div className="flex items-center justify-center gap-2.5">
-            <span className="pad-glyph" aria-hidden />
+          <div className="flex flex-col items-center gap-1.5">
+            <BrandMark size={64} />
             <h1 className="font-display text-2xl font-bold text-[var(--brand-900)]">Klean All</h1>
           </div>
           <p className="text-sm text-slate-500 text-center mt-1 mb-5">Factory ERP / POS</p>

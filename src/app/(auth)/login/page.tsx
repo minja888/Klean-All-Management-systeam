@@ -2,9 +2,9 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import { useI18n } from "@/components/i18n-provider";
 import { LanguageToggle } from "@/components/language-toggle";
-import { BrandMark } from "@/components/brand-mark";
 import { api } from "@/lib/client";
 import type { TranslationKey } from "@/lib/i18n";
 
@@ -36,13 +36,22 @@ function LoginPortal() {
   const [tab, setTab] = useState<"login" | "register">("login");
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4">
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        // The real product, softened to a whisper behind the card.
+        backgroundImage:
+          "linear-gradient(rgba(246,247,243,0.9), rgba(240,253,244,0.94)), url('/brand/pads-stack.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
       <div className="w-full max-w-md">
         <div className="flex justify-end mb-3"><LanguageToggle /></div>
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-          <div className="flex flex-col items-center gap-1.5">
-            <BrandMark size={64} />
-            <h1 className="font-display text-2xl font-bold text-[var(--brand-900)]">Klean All</h1>
+        <div className="bg-white/95 backdrop-blur rounded-xl shadow-lg border border-slate-200 p-8">
+          {/* The PNG carries generous internal padding — crop it optically. */}
+          <div className="flex justify-center overflow-hidden h-[104px] items-center">
+            <Image src="/brand/logo.png" alt="Klean-All — Kitchen Cleaner Pads" width={260} height={260} priority className="w-[260px] h-auto" />
           </div>
           <p className="text-sm text-slate-500 text-center mt-1 mb-5">Factory ERP / POS</p>
 
@@ -73,7 +82,7 @@ function LoginForm() {
 
   const [mode, setMode] = useState<"role" | "email">("role");
   const [role, setRole] = useState<RoleKey | "">("");
-  const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
+  const [users, setUsers] = useState<{ id: string; name: string; email: string }[]>([]);
   const [userId, setUserId] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -86,13 +95,15 @@ function LoginForm() {
   useEffect(() => {
     setUsers([]); setUserId("");
     if (!role) return;
-    api.get<{ id: string; name: string }[]>(`/api/auth/role-users?role=${role}`)
+    api.get<{ id: string; name: string; email: string }[]>(`/api/auth/role-users?role=${role}`)
       .then((list) => {
         setUsers(list);
         if (list.length === 1) setUserId(list[0].id);
       })
       .catch(() => setUsers([]));
   }, [role]);
+
+  const selectedEmail = users.find((u) => u.id === userId)?.email ?? "";
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -133,6 +144,18 @@ function LoginForm() {
                 <option value="">—</option>
                 {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
               </select>
+            </div>
+          )}
+          {selectedEmail && (
+            <div>
+              <label className="block text-sm font-medium text-slate-600 mb-1">{t("auth.email")}</label>
+              <input
+                type="email"
+                value={selectedEmail}
+                readOnly
+                className={inputClass + " bg-[var(--brand-50)] text-emerald-900 cursor-default"}
+                tabIndex={-1}
+              />
             </div>
           )}
         </>

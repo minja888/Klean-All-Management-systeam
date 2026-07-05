@@ -10,9 +10,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import { useI18n } from "@/components/i18n-provider";
 import { LanguageToggle } from "@/components/language-toggle";
-import { BrandMark } from "@/components/brand-mark";
 import { api } from "@/lib/client";
 import { canView, type Module } from "@/lib/access";
 import type { TranslationKey } from "@/lib/i18n";
@@ -118,12 +118,12 @@ export function AppShell({
     <div className="min-h-screen flex">
       {/* Sidebar — deep leaf green; active item carries the sponge-yellow bar */}
       <aside className="w-60 shrink-0 bg-[var(--brand-950)] flex flex-col">
-        <div className="px-4 py-4 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <BrandMark size={34} className="shrink-0" />
-            <span className="font-display text-lg font-bold text-white truncate">{companyName}</span>
+        <div className="px-3 py-4 border-b border-white/10">
+          {/* The official logo sits on a white plate so it reads on deep green. */}
+          <div className="bg-white rounded-lg px-2 flex items-center justify-center overflow-hidden h-[64px]">
+            <Image src="/brand/logo.png" alt={companyName} width={170} height={170} className="w-[170px] h-auto" />
           </div>
-          <div className="text-xs text-emerald-200/70 mt-1">{t("app.tagline")}</div>
+          <div className="text-xs text-emerald-200/70 mt-2 text-center">{t("app.tagline")}</div>
         </div>
 
         <nav className="flex-1 overflow-y-auto p-2 space-y-1">
